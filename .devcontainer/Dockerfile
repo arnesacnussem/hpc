@@ -21,3 +21,9 @@ RUN apt-get update \
     gtkwave psmisc octave-common octave-communications octave-communications-common \
     && git lfs install && \
     apt-get clean
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && \
+    apt-get install -y nodejs && \
+    apt update && \
+    apt install nodejs
+RUN npm -g install yarn && yarn global add nodemon
