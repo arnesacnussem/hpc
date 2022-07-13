@@ -1,0 +1,234 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.3
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2020 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Wed Jul 13 19:56:55 2022
+
+# Variables
+
+# environment
+LC_ALL = C
+# environment
+VSCODE_CWD = /vscode/bin/linux-x64/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a
+# environment
+GIT_COMMITTER_NAME = GitHub
+# default
+MAKE_COMMAND := make
+# environment
+VSCODE_HANDLES_SIGPIPE = true
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+.VARIABLES := 
+# environment
+PWD = /workspaces/hpc
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+HOSTNAME = codespaces-6d0b55
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# automatic
+%F = $(notdir $%)
+# environment
+LANG = C
+# environment
+GITHUB_SERVER_URL = https://github.com
+# default
+.LOADED := 
+# default
+.INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
+# environment
+GITHUB_API_URL = https://api.github.com
+# environment
+PROMPT_DIRTRIM = 4
+# makefile
+MAKEFLAGS = pqrR
+# makefile
+CURDIR := /workspaces/hpc
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# environment
+LESSOPEN = | /usr/bin/lesspipe %s
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+MFLAGS = -pqrR
+# default
+.SHELLFLAGS := -c
+# environment
+GITHUB_USER = arnesacnussem
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+ContainerVersion = 12
+# makefile
+MAKEFILE_LIST := 
+# automatic
+@F = $(notdir $@)
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# environment
+SHELL_LOGGED_IN = true
+# environment
+INTERNAL_VSCS_TARGET_URL = https://westeurope.online.visualstudio.com
+# automatic
+*F = $(notdir $*)
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# makefile
+SHELL = /bin/sh
+# default
+MAKECMDGOALS := all
+# environment
+GITHUB_TOKEN = ghu_BRRVOde7LSomgFtkNrChp6zb1kHjPr1dh0PP
+# environment
+SHLVL = 1
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /vscode/bin/linux-x64/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/vscode/.local/bin
+# default
+MAKEFILES := 
+# automatic
+^F = $(notdir $^)
+# environment
+GIT_COMMITTER_EMAIL = noreply@github.com
+# environment
+CODESPACES = true
+# environment
+LESSCLOSE = /usr/bin/lesspipe %s %s
+# automatic
+?F = $(notdir $?)
+# environment
+LS_COLORS = 
+# automatic
++F = $(notdir $+)
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+BROWSER = /vscode/bin/linux-x64/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a/bin/helpers/browser.sh
+# makefile
+.DEFAULT_GOAL := 
+# environment
+USER = vscode
+# default
+MAKE_VERSION := 4.3
+# environment
+VSCODE_AGENT_FOLDER = /home/vscode/.vscode-remote
+# environment
+_ = /usr/bin/cat
+# environment
+CODESPACE_NAME = arnesacnussem-hpc-69j5pw9q3j44
+# environment
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-5344ffbb-cc9f-4b79-a375-2d3ae9d8648e.sock
+# environment
+CLOUDENV_ENVIRONMENT_ID = 5bf025d9-c208-498a-b4b5-d5fee202e6ee
+# environment
+GITHUB_REPOSITORY = arnesacnussem/hpc
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /home/vscode
+# environment
+GITHUB_GRAPHQL_URL = https://api.github.com/graphql
+# environment
+RepositoryName = hpc
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+GITHUB_CODESPACE_TOKEN = ACIBCCWFKPI2BFTNXYF2KJDCZ7FZVANCNFSM4ABWRP6A
+# default
+.RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
+# environment
+DEBUG = ,vs-ssh
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink load
+# variable set hash-table stats:
+# Load=75/1024=7%, Rehash=0, Collisions=1/102=1%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 1792, inode 1441802): 6 files, no impossibilities.
+
+# 6 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Failed to be updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+all:
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+makefile:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Failed to be updated.
+
+# Not a target:
+GNUmakefile:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Failed to be updated.
+
+# files hash-table stats:
+# Load=6/1024=1%, Rehash=0, Collisions=0/15=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 14 / storage = 122 B / avg = 8 B
+# current buf: size = 8162 B / used = 122 B / count = 14 / avg = 8 B
+
+# strcache performance: lookups = 17 / hit rate = 17%
+# hash-table stats:
+# Load=14/8192=0%, Rehash=0, Collisions=0/17=0%
+# Finished Make data base on Wed Jul 13 19:56:55 2022
+
+ 
+make: *** No rule to make target 'all'.  Stop.
+

@@ -8,7 +8,7 @@ ENTITY matrix_transposer IS
         input : IN code_matrix;
         output : OUT code_matrix_transpose;
         start : IN STD_LOGIC;
-        finish : OUT STD_LOGIC
+        finished : OUT STD_LOGIC
     );
 END matrix_transposer;
 
