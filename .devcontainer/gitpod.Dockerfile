@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full:focal
+FROM gitpod/workspace-full
 
 ENV LANG=en_US.UTF-8
 ARG DEBIAN_FRONTEND=noninteractive
