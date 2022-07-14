@@ -8,7 +8,7 @@
       "type": "shell",
       "command": "nodemon -x 'make || exit 1'",
       "isBackground": true,
-      "problemMatcher":{
+      "problemMatcher": {
         "pattern": {
           "regexp": "(.*):(\\d*):(\\d*):(error|warning|info):(.*)",
           "file": 1,
@@ -22,6 +22,9 @@
           "beginsPattern": "^\\[nodemon\\] starting .*",
           "endsPattern": "^\\[nodemon\\] ((clean exit)|(app crashed)) .*"
         }
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
       }
     }
   ]
