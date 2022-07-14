@@ -3,6 +3,7 @@ FROM gitpod/workspace-full
 ENV LANG=en_US.UTF-8
 ARG DEBIAN_FRONTEND=noninteractive
 
+USER root
 RUN apt-get update \
     && apt-get install -y \
     curl dumb-init zsh bash htop locales man nano git \
@@ -20,3 +21,4 @@ RUN wget -q https://xpra.org/gpg-2022.asc -O- | apt-key add - && \
 RUN npm -g install yarn && yarn global add nodemon
 
 ENV DISPLAY=:0
+USER gitpod
