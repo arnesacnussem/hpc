@@ -1,6 +1,5 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
 USE work.consts.ALL;
 
 ENTITY matrix_transposer IS
