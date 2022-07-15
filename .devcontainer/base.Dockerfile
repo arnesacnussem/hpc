@@ -8,7 +8,7 @@ RUN apt-get update \
     curl dumb-init zsh bash htop locales man nano git \
     ca-certificates apt-transport-https software-properties-common wget \
     procps openssh-client sudo vim.tiny lsb-release \
-    rsync octave ghdl gtkwave build-essential dos2unix \
+    rsync octave gtkwave build-essential dos2unix \
     octave-common octave-communications octave-communications-common
 
 RUN wget -q https://xpra.org/gpg-2022.asc -O- | apt-key add - && \
