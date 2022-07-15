@@ -1,4 +1,4 @@
-GHDL=/usr/bin/ghdl-mcode
+GHDL=/usr/bin/ghdl
 GHDLFLAGS=--std=08
 GHDLRUNFLAGS=
 TOP_LEVEL=matrix_transposer
