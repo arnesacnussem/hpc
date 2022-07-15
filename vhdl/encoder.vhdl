@@ -1,23 +1,26 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use work.consts.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE work.consts.ALL;
 
-entity encoder is
-  port (
-    msg : in bit_vector(MSG_LENGTH to 0);
+ENTITY encoder IS
+  PORT (
+    msg : IN bit_vector(MSG_LENGTH TO 0);
     -- generator matrix
-    g : in generator_matrix;
-    encoded : out bit_vector(MSG_LENGTH to 0)
+    g : IN generator_matrix;
+    encoded : OUT bit_vector(MSG_LENGTH TO 0)
   );
-end encoder;
+END encoder;
 
-architecture Encoder of encoder is
-  component MatrixTransposer
-    port (
-      input : in code_matrix;
-      output : out code_matrix_transpose
+ARCHITECTURE Encoder OF encoder IS
+  COMPONENT MatrixTransposer
+    PORT (
+      input : IN code_matrix;
+      output : OUT code_matrix_transpose
     );
-  end component;
-begin
+  END COMPONENT;
+BEGIN
+  PROCESS
+  BEGIN
 
-end architecture;
+  END PROCESS;
+END ARCHITECTURE;
