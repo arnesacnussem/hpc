@@ -6,7 +6,7 @@
     {
       "label": "watch",
       "type": "shell",
-      "command": "nodemon -x 'make || exit 1'",
+      "command": "nodemon -x 'ghdl -a --std=08 vhdl/* || exit 1'",
       "isBackground": true,
       "problemMatcher": {
         "pattern": {
