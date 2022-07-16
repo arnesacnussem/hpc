@@ -26,7 +26,7 @@ BEGIN
         encoded => encoded
     );
     PROCESS
-        VARIABLE m : bit_vector(MSG_LENGTH TO 0) := "1010";
+        VARIABLE m : bit_vector(MSG_LENGTH TO 0);
     BEGIN
         msg <= m;
     END PROCESS;
