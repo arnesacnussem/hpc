@@ -6,8 +6,8 @@ ENTITY matrix_transposer IS
     PORT (
         input : IN code_matrix;
         output : OUT code_matrix_transpose;
-        start : IN STD_LOGIC;
-        finished : OUT STD_LOGIC
+        start : IN BIT;
+        finished : OUT BIT
     );
 END matrix_transposer;
 
