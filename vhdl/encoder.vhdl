@@ -5,22 +5,16 @@ USE work.consts.ALL;
 
 ENTITY encoder IS
   PORT (
-    msg : IN BIT_VECTOR(0 TO MSG_LENGTH);
+    msg : IN MESSAGE;
     -- generator matrix
-    gen : IN generator_matrix;
-    encoded : OUT BIT_VECTOR(0 TO CODEWORD_LENGTH);
-    done : OUT STD_LOGIC := '0';
+    gen : IN GEN_MAT;
+    encoded : OUT MSG_ENC;
+    done : OUT STD_LOGIC;
     rst, clk : IN STD_LOGIC
   );
 END encoder;
 
 ARCHITECTURE Encoder OF encoder IS
-  COMPONENT MatrixTransposer
-    PORT (
-      input : IN code_matrix;
-      output : OUT code_matrix_transpose
-    );
-  END COMPONENT;
   PROCEDURE matrix_multiplex_add(
     VARIABLE a, b : IN BIT;
     VARIABLE c : OUT BIT
@@ -46,21 +40,24 @@ ARCHITECTURE Encoder OF encoder IS
     END IF;
   END matrix_multiplex_mux;
 BEGIN
-  PROCESS (msg, gen)
-    VARIABLE temp : BIT_VECTOR(0 TO CODEWORD_LENGTH);
+  encoding : PROCESS (msg, gen, clk, rst)
+    VARIABLE temp : MSG_ENC;
     VARIABLE m, g, t : BIT;
   BEGIN
-
-    temp := (0 => '0', OTHERS => '0');
-    FOR col IN 0 TO CODEWORD_LENGTH LOOP
-      FOR row IN 0 TO MSG_LENGTH LOOP
-        m := msg(row);
-        g := gen(row, col);
-        matrix_multiplex_mux(a => m, b => g, c => t);
-        matrix_multiplex_add(a => t, b => temp(col), c => temp(col));
+    IF rst = '1' THEN
+      done <= '0';
+    ELSIF rising_edge(clk) THEN
+      temp := (OTHERS => '0');
+      FOR col IN 0 TO CODEWORD_LENGTH LOOP
+        FOR row IN 0 TO MSG_LENGTH LOOP
+          m := msg(row);
+          g := gen(row, col);
+          matrix_multiplex_mux(a => m, b => g, c => t);
+          matrix_multiplex_add(a => t, b => temp(col), c => temp(col));
+        END LOOP;
       END LOOP;
-    END LOOP;
+      done <= '1';
+    END IF;
     encoded <= temp;
-    done <= '1';
   END PROCESS;
 END ARCHITECTURE;
