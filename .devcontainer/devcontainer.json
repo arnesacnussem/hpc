@@ -14,5 +14,21 @@
 
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode",
-  "features": {}
+"features": {},
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"k--kato.intellij-idea-keybindings",
+			"ms-vscode.makefile-tools",
+			"rjyoung.vscode-modern-vhdl-support",
+			"tusindfryd.octave-formatter",
+			"esbenp.prettier-vscode",
+			"puorc.awesome-vhdl",
+			"Vinrobot.vhdl-formatter",
+			"redhat.vscode-yaml",
+			"PKief.material-icon-theme",
+			"toasty-technologies.octave"
+		]
+	}
+}
 }
