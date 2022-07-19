@@ -1,3 +1,4 @@
+# docker build . -f base.Dockerfile -t sacnussem/devcontainer:hpc-focal
 FROM mcr.microsoft.com/vscode/devcontainers/base:0-focal
 
 ENV LANG=en_US.UTF-8
@@ -8,7 +9,7 @@ RUN apt-get update \
     curl dumb-init zsh bash htop locales man nano git \
     ca-certificates apt-transport-https software-properties-common wget \
     procps openssh-client sudo vim.tiny lsb-release \
-    rsync octave gtkwave build-essential dos2unix \
+    rsync octave build-essential dos2unix pip \
     octave-common octave-communications octave-communications-common
 
 RUN wget -q https://xpra.org/gpg-2022.asc -O- | apt-key add - && \

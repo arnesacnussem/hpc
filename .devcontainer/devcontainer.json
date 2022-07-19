@@ -27,7 +27,8 @@
 			"Vinrobot.vhdl-formatter",
 			"redhat.vscode-yaml",
 			"PKief.material-icon-theme",
-			"toasty-technologies.octave"
+			"toasty-technologies.octave",
+			"teros-technology.teroshdl"
 		]
 	}
 }
