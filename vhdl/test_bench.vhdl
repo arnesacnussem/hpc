@@ -18,13 +18,8 @@ ARCHITECTURE TestBench OF test_bench IS
         );
     END COMPONENT;
 
-    SIGNAL msg : MESSAGE := "1010";
-    SIGNAL gen : GEN_MAT := (
-        0 => "1101000",
-        1 => "0110100",
-        2 => "1110010",
-        3 => "1010001"
-    );
+    SIGNAL msg : MESSAGE := "10100011101";
+    SIGNAL gen : GEN_MAT := GENERATE_MATRIX;
     SIGNAL encoded : MSG_ENC;
     SIGNAL rst, done, clk : STD_LOGIC;
 BEGIN
@@ -36,9 +31,7 @@ BEGIN
         clk => clk,
         done => done
     );
-
-    -- clock
-    PROCESS
+    clock : PROCESS
     BEGIN
         rst <= '0';
         clk <= '0';
@@ -53,12 +46,12 @@ BEGIN
         WAIT;
     END PROCESS;
 
-    PROCESS
+    check_output : PROCESS
     BEGIN
         WAIT ON done;
         WAIT UNTIL rising_edge(done);
         REPORT to_string(msg) & " ==> " & to_string(encoded)
-        ;
+            ;
         WAIT;
     END PROCESS;
 END ARCHITECTURE;
