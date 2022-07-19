@@ -6,7 +6,7 @@
     {
       "label": "watch",
       "type": "shell",
-      "command": "nodemon -x 'ghdl -a --std=08 vhdl/* || exit 1'",
+      "command": "yarn mon",
       "isBackground": true,
       "problemMatcher": {
         "pattern": {

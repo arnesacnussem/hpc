@@ -4,8 +4,11 @@
   "repository": "https://github.com/arnesacnussem/hpc",
   "author": "Arne <arnesacnussem@users.noreply.github.com>",
   "type": "module",
+  "license": "WTFPL",
   "scripts": {
-    "gen_consts": "node gen_consts.js",
+    "anl": "ghdl -a --workdir=/tmp --std=08 vhdl/*.vhdl || exit 1",
+    "mon":"nodemon -x yarn anl",
+    "gen_consts": "node scripts/gen_consts.js",
     "gen": "yarn gen_consts"
   }
 }

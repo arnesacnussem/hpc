@@ -46,7 +46,6 @@ exec(
 
     const vhdl = `
 LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
 PACKAGE consts IS
     CONSTANT MSG_LENGTH : INTEGER := ${matrixs.k - 1}; ${comment(
       "msg len = " + matrixs.k
