@@ -1,0 +1,11 @@
+{
+  "name": "hpc",
+  "version": "1.0.0",
+  "repository": "https://github.com/arnesacnussem/hpc",
+  "author": "Arne <arnesacnussem@users.noreply.github.com>",
+  "type": "module",
+  "scripts": {
+    "gen_consts": "node gen_consts.js",
+    "gen": "yarn gen_consts"
+  }
+}
