@@ -1,16 +1,12 @@
 function [] = main_3(check_bit)
-    G = hammgen(check_bit);
+    pkg load communications;
+    [H,G,n,k]=hammgen(check_bit);
     [row, col] = size(G);
-    G = [G, zeros(row, 1); ones(1, col + 1)];
-    G = rem(abs(rref(G)), 2);
     c = check_bit + 1;
-    k = 2^check_bit - 1 - check_bit;
-    n = 2^check_bit;
-    H = gen2par(G);
     EbN0db = 10;
     table = create_table(H);
     rate = k / n;
-    ferrlim = 10000;
+    ferrlim = 10000; #f-err-lim
     error_set = {};
     Errors = {};
     frame = zeros(EbN0db, 3);
@@ -24,7 +20,10 @@ function [] = main_3(check_bit)
         nframe = 0;
 
         while nframe < ferrlim
+            printf("nframe=%d\n",nframe);
             nframe = nframe + 1;
+
+            % 原始消息=随机生成
             [msg_org] = Binary_generate(k * k);
             msg = reshape(msg_org, [k, k]);
             code = Hamming_Encoding(msg, G);
@@ -35,13 +34,11 @@ function [] = main_3(check_bit)
 
             if isequal(est_code, code) == 0
                 count = count + 1;
-                rec ~= code
-                est_code ~= code
+                rec ~= code;
+                est_code ~= code;
             end
 
         end
-
-        count/
     end
 
 end

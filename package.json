@@ -6,9 +6,10 @@
   "type": "module",
   "license": "WTFPL",
   "scripts": {
-    "anl": "ghdl -a --workdir=/tmp --std=08 vhdl/*.vhdl || exit 1",
-    "mon":"nodemon -x yarn anl",
-    "gen_consts": "node scripts/gen_consts.js",
-    "gen": "yarn gen_consts"
+    "preanl": "mkdir -p /tmp/ghdl",
+    "anl": "ghdl -a --workdir=/tmp/ghdl --std=08 `find ./vhdl/gen -type f -name *.vhdl -print0 | xargs -0` `find ./vhdl/src -type f -name *.vhdl -print0 | xargs -0` || exit 1",
+    "postanl": "rm /tmp/ghdl/* && rm -r /tmp/yarn--*",
+    "mon": "nodemon -x yarn anl",
+    "gen": "node scripts/generate.js"
   }
 }
