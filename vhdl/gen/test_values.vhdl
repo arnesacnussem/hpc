@@ -3,10 +3,10 @@ library ieee;
 USE work.types.ALL;
 PACKAGE test_values IS
     CONSTANT MESSAGE_MATRIX : MSG_MAT := (
-        0 => "0000",
-    1 => "0000",
-    2 => "0101",
-    3 => "1101"
+        0 => "0011",
+    1 => "1010",
+    2 => "0000",
+    3 => "0010"
     );
-    CONSTANT MESSAGE_SERIAL : MSG_SERIAL := "0000000001011101";
+    CONSTANT MESSAGE_SERIAL : MSG_SERIAL := "0011101000000010";
 END PACKAGE test_values;

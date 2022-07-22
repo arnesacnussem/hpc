@@ -7,7 +7,7 @@
   "license": "WTFPL",
   "scripts": {
     "preanl": "mkdir -p /tmp/ghdl",
-    "anl": "ghdl -a --workdir=/tmp/ghdl --std=08 `find ./vhdl/gen -type f -name *.vhdl -print0 | xargs -0` `find ./vhdl/src -type f -name *.vhdl -print0 | xargs -0` || exit 1",
+    "anl": "ghdl -a --workdir=/tmp/ghdl --std=08 `./scripts/list_vhdl.sh` || exit 1",
     "postanl": "rm /tmp/ghdl/* && rm -r /tmp/yarn--*",
     "mon": "nodemon -x yarn anl",
     "gen": "node scripts/generate.js"
