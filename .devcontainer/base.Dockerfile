@@ -25,3 +25,4 @@ COPY install-quartus.sh .
 RUN sh install-quartus.sh
 
 ENV DISPLAY=:0
+ENV PATH=/opt/intelFPGA_lite/21.1/quartus/bin:$PATH
