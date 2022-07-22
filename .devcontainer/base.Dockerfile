@@ -10,7 +10,8 @@ RUN apt-get update \
     ca-certificates apt-transport-https software-properties-common wget \
     procps openssh-client sudo vim.tiny lsb-release \
     rsync octave build-essential dos2unix pip \
-    octave-common octave-communications octave-communications-common
+    octave-common octave-communications octave-communications-common \
+    libgnat-9 zlib1g-dev pip libstdc++-10-dev clang tcl8.6-dev libreadline-dev
 
 RUN wget -q https://xpra.org/gpg-2022.asc -O- | apt-key add - && \
     wget -q https://xpra.org/gpg-2018.asc -O- | apt-key add - && \
@@ -19,5 +20,8 @@ RUN wget -q https://xpra.org/gpg-2022.asc -O- | apt-key add - && \
     apt-get install -y nodejs xpra
 
 RUN npm -g install yarn && yarn global add nodemon
+
+COPY install-quartus.sh .
+RUN sh install-quartus.sh
 
 ENV DISPLAY=:0

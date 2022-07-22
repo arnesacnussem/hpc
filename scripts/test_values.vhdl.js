@@ -15,7 +15,7 @@ PACKAGE ${pkgName} IS
           .map((row, index) =>
             String(index).concat(' => "').concat(row).concat('"')
           )
-          .join(",\n    ")}
+          .join(",\n\t\t")}
     );
     CONSTANT MESSAGE_SERIAL : MSG_SERIAL := "${msg
       .map((v) => v.join(""))
