@@ -36,9 +36,9 @@ const matrixs = ((check_bits) => {
   return matrixs;
 })(gencfg.check_bits);
 
-import genConst from "./consts.js";
-import genTypes from "./types.js";
-import genTest from "./test_values.js";
-genConst(matrixs);
+import genConfig from "./config.vhdl.js";
+import genTypes from "./types.vhdl.js";
+import genTest from "./test_values.vhdl.js";
+genConfig(matrixs);
 genTypes(matrixs);
 genTest(matrixs);
