@@ -59,7 +59,6 @@ BEGIN
             REPORT "temp'=";
             debug_output : FOR row IN 0 TO temp_transposed'length - 1 LOOP
                 REPORT INTEGER'image(row) & " => " & to_string(temp_transposed(row));
-                REPORT INTEGER'image(row) & " => " & to_string(temp_transposed(row));
             END LOOP; -- debug_output
             REPORT "temp=";
             debug_output2 : FOR row IN 0 TO temp'length - 1 LOOP

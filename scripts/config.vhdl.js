@@ -7,6 +7,7 @@ export default ({ h, g, n, k }) => {
 library ieee;
 USE work.types.ALL;
 PACKAGE ${pkgName} IS
+    CONSTANT CHANNEL_ERROR_RATE : INTEGER := 3;
     ${comment("MSG_LENGTH(k) = " + k)}
     CONSTANT MSG_LENGTH      : INTEGER := ${k - 1};
 
