@@ -10,7 +10,7 @@
   "forwardPorts": [14500],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postStartCommand": "xpra start :100 --pulseaudio=no --bind-tcp=0.0.0.0:14500",
+  "postAttachCommand": "xpra start :100 --pulseaudio=no --bind-tcp=0.0.0.0:14500",
   "postCreateCommand": "rm ~/.prj_config.teros || ln -s /workspaces/hpc/.prj_config.teros ~/.prj_config.teros",
 
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
@@ -29,7 +29,8 @@
         "redhat.vscode-yaml",
         "PKief.material-icon-theme",
         "toasty-technologies.octave",
-        "teros-technology.teroshdl"
+        "teros-technology.teroshdl",
+        "ms-python.python"
       ]
     }
   }
