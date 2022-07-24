@@ -1,8 +1,8 @@
-VHDL_LIST:=$(shell cat vhdl/.list)
-
-compile_script:
+scripts:
 	@yarn tsc
 
-gen_file_list: compile_script
+vhdl: scripts
 	@node dist/hierarchy.js
-	VHDL_LIST:=$(shell cat vhdl/.list)
+
+anl: vhdl
+	ghdl -a --std=08 --workdir=build $(shell cat vhdl.list)

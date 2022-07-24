@@ -81,4 +81,4 @@ console.log("\n\n====DependBy====");
 nList.forEach((n) => {
   console.log(`${n.name} >> ${n.dependBy.join(", ")}`);
 });
-fs.writeFileSync("./vhdl/.list", nList.map((n) => n.path).join(" "));
+fs.writeFileSync("./vhdl.list", nList.map((n) => n.path).join(" "));
