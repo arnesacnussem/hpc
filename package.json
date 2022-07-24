@@ -10,6 +10,13 @@
     "anl": "ghdl -a --workdir=/tmp/ghdl --std=08 `./scripts/list_vhdl.sh` || exit 1",
     "postanl": "rm /tmp/ghdl/* && rm -r /tmp/yarn--*",
     "mon": "nodemon -x yarn anl",
-    "gen": "node scripts/generate.js"
+    "gen": "ts-node scripts/generator.ts",
+    "hierarchy": "ts-node scripts/hierarchy.ts"
+  },
+  "dependencies": {
+    "@types/node": "^18.0.6",
+    "ts-node": "^10.9.1",
+    "tsc": "^2.0.4",
+    "typescript": "^4.7.4"
   }
 }

@@ -1,4 +1,4 @@
--- generated from /workspaces/hpc/scripts/generate.js
+-- generated from /workspaces/hpc/scripts/generator.ts
 LIBRARY ieee;
 PACKAGE types IS
     TYPE GEN_MAT IS ARRAY (0 TO 10, 0 TO 14) OF BIT;

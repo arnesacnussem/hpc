@@ -2,3 +2,8 @@
 !.vscode/tasks.json
 *.o
 *.cf
+/node_modules/
+yarn.lock
+/dist/
+/out/
+/build/
