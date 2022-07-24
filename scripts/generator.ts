@@ -12,13 +12,13 @@ const matrixs = ((check_bits) => {
   printf("k=%d\\n",k);
   '`;
   const stdout = execSync(octaveCMD).toString();
-  const matrixs = { h: [], g: [], n: "", k: "" };
+  const matrixs = { h: [] as string[], g: [] as string[], n: -1, k: -1 };
   stdout
     .trim()
     .split("\n")
     .forEach((line) => {
       if (line.trim() === "") return;
-      const current = line.at(0).trim();
+      const current = line.at(0)?.trim();
       switch (current) {
         case "h":
         case "g":
@@ -30,6 +30,8 @@ const matrixs = ((check_bits) => {
         case "n":
         case "k":
           matrixs[current] = parseInt(line.split("=").map((l) => l.trim())[1]);
+          break;
+        default:
       }
     });
 

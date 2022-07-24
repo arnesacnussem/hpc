@@ -1,7 +1,7 @@
 import { gencfg } from "./generator_cfg.js";
 import { writeFile, comment } from "./generator_common.js";
-
-export default ({ h, g, n, k }) => {
+import { matrix } from "./generator.d.js";
+export default ({ h, g, n, k }: matrix) => {
   const pkgName = "types";
   const vhdl = `-- generated from ${process.argv[1]}
 LIBRARY ieee;
