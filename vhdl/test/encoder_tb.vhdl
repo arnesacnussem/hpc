@@ -15,7 +15,7 @@ ARCHITECTURE bench OF encoder_tb IS
             msg     : IN MSG_MAT;
             gen     : IN GEN_MAT;
             encoded : OUT CODEWORD_MAT;
-            done    : OUT STD_LOGIC;
+            ready    : OUT STD_LOGIC;
             rst     : IN STD_LOGIC;
             clk     : IN STD_LOGIC
         );
@@ -29,7 +29,7 @@ ARCHITECTURE bench OF encoder_tb IS
     SIGNAL msg     : MSG_MAT := MESSAGE_MATRIX;
     SIGNAL gen     : GEN_MAT := GENERATE_MATRIX;
     SIGNAL encoded : CODEWORD_MAT;
-    SIGNAL done    : STD_LOGIC;
+    SIGNAL ready    : STD_LOGIC;
     SIGNAL rst     : STD_LOGIC := '0';
     SIGNAL clk     : STD_LOGIC := '0';
 
@@ -40,7 +40,7 @@ BEGIN
         msg     => msg,
         gen     => gen,
         encoded => encoded,
-        done    => done,
+        ready    => ready,
         rst     => rst,
         clk     => clk
     );
@@ -57,18 +57,9 @@ BEGIN
 
     PROCESS
     BEGIN
-        WAIT ON done;
-        WAIT UNTIL rising_edge(done);
-        REPORT "DONE!!!!!";
+        WAIT ON ready;
+        WAIT UNTIL rising_edge(ready);
+        REPORT "ready!!!!!";
         WAIT;
     END PROCESS;
-
-    -- clk_process : PROCESS
-    -- BEGIN
-    --     clk <= '1';
-    --     WAIT FOR clk_period/2;
-    --     clk <= '0';
-    --     WAIT FOR clk_period/2;
-    -- END PROCESS clk_process;
-
 END;

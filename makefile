@@ -19,3 +19,5 @@ elab: anl
 
 run: elab
 	$(GHDL) -r $(GHDL_ARG) $(TOP_LEVEL)
+
+.PHONY: vhdl

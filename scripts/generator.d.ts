@@ -3,6 +3,7 @@ export type matrix = {
   k: number;
   h: string[];
   g: string[];
+  [keys: string]: string[] | number;
 };
 
 export type vhdl = {

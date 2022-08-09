@@ -2,14 +2,14 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.math_real.uniform;
-USE ieee.math_real.floor;
+USE ieee.math_real.round;
 USE work.config.ALL;
 USE work.types.ALL;
 
 ENTITY channel IS
     PORT (
-        clk, en : IN STD_LOGIC;
-        ready   : OUT STD_LOGIC;
+        en      : IN STD_LOGIC;
+        ready   : OUT STD_LOGIC := '0';
         dat_in  : IN CODEWORD_MAT;
         dat_out : OUT CODEWORD_MAT
     );
@@ -19,48 +19,43 @@ ARCHITECTURE DataChannel OF channel IS
     TYPE CH_STATE_TYPE IS (DISABLED, ENABLED);
     SIGNAL STATE : CH_STATE_TYPE := DISABLED;
 
-    PROCEDURE shouldBitError (
-        VARIABLE should : OUT STD_LOGIC
-    ) IS
-        VARIABLE seed1 : POSITIVE;
-        VARIABLE seed2 : POSITIVE;
-        VARIABLE x     : real;
-        VARIABLE y     : INTEGER;
-    BEGIN
-        seed1 := 1;
-        seed2 := 1;
-        FOR n IN 1 TO 10 LOOP
-            uniform(seed1, seed2, x);
-            y := INTEGER(floor(x * 100.0));
-            IF y > CHANNEL_ERROR_RATE THEN
-                should := '1';
-            ELSE
-                should := '0';
-            END IF;
-        END LOOP;
-    END PROCEDURE;
 BEGIN
-
-    unit_state : PROCESS (clk, en)
+    unit_state : PROCESS (en)
     BEGIN
         IF en = '1' THEN
             STATE <= ENABLED;
+            REPORT "CHANNEL ENABLED";
         ELSE
             STATE <= DISABLED;
+            REPORT "CHANNEL DISABLED";
         END IF;
     END PROCESS;
 
     PROCESS (STATE)
-        VARIABLE shouldError : STD_LOGIC;
-        VARIABLE err_bits    : real := 0.0;
-        VARIABLE err_rate    : real := 0.0;
+        VARIABLE shouldError  : STD_LOGIC;
+        VARIABLE seed1, seed2 : INTEGER := 999;
+        VARIABLE err_bits     : real    := 0.0;
+        VARIABLE err_rate     : real    := 0.0;
+
+        IMPURE FUNCTION rand_real(min_val, max_val : real) RETURN real IS
+            VARIABLE r                                 : real;
+        BEGIN
+            uniform(seed1, seed2, r);
+            RETURN r * (max_val - min_val) + min_val;
+        END FUNCTION;
     BEGIN
         CASE(STATE) IS
             WHEN ENABLED =>
             IF ready = '0' THEN
+                REPORT "Start transport";
                 FOR row IN 0 TO dat_in'length - 1 LOOP
                     FOR col IN 0 TO dat_in(0)'length - 1 LOOP
-                        shouldBitError(should => shouldError);
+                        IF rand_real(0.0, 100.0) < real(CHANNEL_ERROR_RATE) THEN
+                            shouldError := '1';
+                            REPORT "Channel error at (" & INTEGER'image(row) & ", " & INTEGER'image(col) & ")";
+                        ELSE
+                            shouldError := '0';
+                        END IF;
                         IF shouldError THEN
                             dat_out(row)(col) <= NOT dat_in(row)(col);
                             err_bits := err_bits + 1.0;
@@ -69,11 +64,11 @@ BEGIN
                         END IF;
                     END LOOP;
                 END LOOP;
-                REPORT "Overall error channel rate = " & real'image(err_bits / real(dat_in'length * dat_in(0)'length));
+                REPORT "Overall channel error rate = " & real'image((err_bits / real(dat_in'length * dat_in(0)'length)) * 100.0) & "%";
                 ready <= '1';
+                REPORT "Finished transport";
             END IF;
             WHEN DISABLED =>
-            REPORT "CHANNEL DISABLED.";
         END CASE;
 
     END PROCESS;

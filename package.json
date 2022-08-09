@@ -6,10 +6,7 @@
   "type": "module",
   "license": "WTFPL",
   "scripts": {
-    "prpreeanl": "mkdir -p /tmp/ghdl",
-    "preanl":"",
-    "anl": "ghdl -a --workdir=/tmp/ghdl --std=08 `./scripts/list_vhdl.sh` || exit 1",
-    "postanl": "rm /tmp/ghdl/* && rm -r /tmp/yarn--*",
+    "anl": "make anl || exit 1",
     "mon": "nodemon -x yarn anl",
     "gen": "ts-node scripts/generator.ts",
     "hierarchy": "ts-node scripts/hierarchy.ts",
