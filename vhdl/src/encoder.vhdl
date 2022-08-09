@@ -9,8 +9,8 @@ ENTITY encoder IS
         msg     : IN MSG_MAT;       -- message matrix
         gen     : IN GEN_MAT;       -- generator matrix
         encoded : OUT CODEWORD_MAT; -- codeword matrix
-        done    : OUT STD_LOGIC;    -- signal of work done
-        rst     : IN STD_LOGIC;     -- reset done status and clock of work
+        ready   : OUT STD_LOGIC;    -- signal of work ready
+        rst     : IN STD_LOGIC;     -- reset ready status and clock of work
         clk     : IN STD_LOGIC      -- clock
     );
 END encoder;
@@ -23,7 +23,6 @@ ARCHITECTURE Encoder OF encoder IS
         VARIABLE lin  : IN MSG_LINE;
         VARIABLE lout : OUT CODEWORD_LINE
     ) IS
-        VARIABLE mux : BIT;
     BEGIN
         lout := (OTHERS => '0');
         FOR col IN 0 TO CODEWORD_LENGTH LOOP
@@ -40,36 +39,31 @@ BEGIN
         VARIABLE msg_lin         : MSG_LINE;
     BEGIN
         IF rst = '1' THEN
-            done <= '0';
-        ELSIF done = '1' THEN
-            REPORT "Already done, do nothing";
+            ready <= '0';
+        ELSIF ready = '1' THEN
+            REPORT "Already ready, do nothing";
         ELSIF rising_edge(clk) THEN
-            REPORT "Start encoding";
+
+            REPORT "[ENC] Encoding first round.";
             encode_lines_r1 : FOR L IN 0 TO MSG_LENGTH LOOP
                 msg_lin := msg(L);
                 line_encoder(lin => msg_lin, lout => temp(L));
             END LOOP; -- encode_lines_r1
 
+            REPORT "[ENC] Transpose.";
             transpose_temp : FOR row IN 0 TO temp'length - 1 LOOP
                 FOR col IN 0 TO temp(0)'length - 1 LOOP
                     temp_transposed(col)(row) := temp(row)(col);
                 END LOOP;
             END LOOP; -- transpose_temp
 
-            REPORT "temp'=";
-            debug_output : FOR row IN 0 TO temp_transposed'length - 1 LOOP
-                REPORT INTEGER'image(row) & " => " & to_string(temp_transposed(row));
-            END LOOP; -- debug_output
-            REPORT "temp=";
-            debug_output2 : FOR row IN 0 TO temp'length - 1 LOOP
-                REPORT INTEGER'image(row) & " => " & to_string(temp(row));
-            END LOOP; -- debug_output
-
+            REPORT "[ENC] Encoding second round.";
             encode_lines_r2 : FOR L IN 0 TO CODEWORD_LENGTH LOOP
                 msg_lin := temp_transposed(L);
                 line_encoder(lin => msg_lin, lout => codeword(L));
             END LOOP; -- encode_lines_r2
-            done <= '1';
+            ready <= '1';
+            REPORT "Finished encoding";
         END IF;
         encoded <= codeword;
     END PROCESS;

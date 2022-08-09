@@ -2,38 +2,42 @@ import { mkdirSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { exec, execSync } from "child_process";
 import { gencfg } from "./generator_cfg.js";
+import { matrix } from "./generator.d.js";
 const matrixs = ((check_bits) => {
-  const octaveCMD = `octave-cli -q --eval '
-  pkg load communications;
-  [h,g,n,k]=hammgen(${check_bits});
-  printf("h=%s\\n",mat2str(h));
-  printf("g=%s\\n",mat2str(g));
-  printf("n=%d\\n",n);
-  printf("k=%d\\n",k);
-  '`;
+  const octaveCMD = `octave-cli -q -p scripts --eval 'gen(${check_bits})'`;
   const stdout = execSync(octaveCMD).toString();
-  const matrixs = { h: [] as string[], g: [] as string[], n: -1, k: -1 };
+  const matrixs = {} as matrix;
+
   stdout
     .trim()
     .split("\n")
     .forEach((line) => {
+      console.log(line);
+
       if (line.trim() === "") return;
-      const current = line.at(0)?.trim();
-      switch (current) {
-        case "h":
-        case "g":
-          matrixs[current] = line
-            .slice(3, line.length - 1)
+      if (!line.startsWith("!#")) return;
+      const split = line
+        .substring(2, line.indexOf("#!"))
+        .trim()
+        .split(" ")
+        .map((v) => v.trim());
+      const type = split[0];
+      const tag = split[1];
+      const value = line.substring(line.indexOf("#!") + 2).trim();
+      switch (type) {
+        case "mat":
+          matrixs[tag] = value
+            .substring(1, value.length - 1)
             .split(";")
             .map((v) => v.split(" ").join(""));
           break;
-        case "n":
-        case "k":
-          matrixs[current] = parseInt(line.split("=").map((l) => l.trim())[1]);
+        case "val":
+          matrixs[tag] = parseInt(value);
           break;
         default:
       }
     });
+  console.log(matrixs);
 
   return matrixs;
 })(gencfg.check_bits);
@@ -41,6 +45,6 @@ const matrixs = ((check_bits) => {
 import genConfig from "./config.vhdl.js";
 import genTypes from "./types.vhdl.js";
 import genTest from "./test_values.vhdl.js";
-genConfig(matrixs);
+genConfig(Object.assign({ table: [] }, matrixs));
 genTypes(matrixs);
 genTest(matrixs);
