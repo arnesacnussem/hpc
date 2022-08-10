@@ -12,6 +12,7 @@ vhdl: scripts
 
 anl: vhdl
 	@mkdir -p $(WORKDIR)
+	
 	$(GHDL) -a $(GHDL_ARG) $(shell cat vhdl.list)
 
 elab: anl

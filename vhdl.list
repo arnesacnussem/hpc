@@ -1,1 +1,1 @@
-vhdl/gen/types.vhdl vhdl/gen/config.vhdl vhdl/gen/test_values.vhdl vhdl/test/encoder_tb.vhdl vhdl/test/channel_tb.vhdl vhdl/src/encoder.vhdl vhdl/src/decoder.vhdl vhdl/src/channel.vhdl
+vhdl/gen/types.vhdl vhdl/gen/config.vhdl vhdl/gen/test_values.vhdl vhdl/test/encoder_tb.vhdl vhdl/test/channel_tb.vhdl vhdl/src/matrix_io.vhdl vhdl/src/encoder.vhdl vhdl/src/decoder.vhdl vhdl/src/channel.vhdl
