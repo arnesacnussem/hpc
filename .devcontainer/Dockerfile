@@ -1,4 +1,4 @@
-FROM sacnussem/devcontainer:hpc-focal
+FROM sacnussem/devcontainer:hpc-focal-quartus
 
 COPY .bashrc /home/vscode/
 RUN apt-get update && apt-get install -y libgnat-9 zlib1g-dev
