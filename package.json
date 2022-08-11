@@ -7,10 +7,10 @@
   "license": "WTFPL",
   "scripts": {
     "anl": "make anl || exit 1",
-    "mon": "nodemon -x yarn anl",
+    "mon": "nodemon -x ./gradlew an",
     "gen": "ts-node scripts/generator.ts",
     "hierarchy": "ts-node scripts/hierarchy.ts",
-    "build": "tsc"
+    "compileScripts": "tsc"
   },
   "dependencies": {
     "@types/node": "^18.0.6",

@@ -2,7 +2,7 @@
 library ieee;
 USE work.types.ALL;
 PACKAGE config IS
-    CONSTANT CHANNEL_ERROR_RATE : INTEGER := 3;
+    CONSTANT CHANNEL_ERROR_RATE : INTEGER := 6;
     -- MSG_LENGTH(k) = 11
     CONSTANT MSG_LENGTH : INTEGER := 10;
 
