@@ -6,8 +6,7 @@
   "type": "module",
   "license": "WTFPL",
   "scripts": {
-    "anl": "make anl || exit 1",
-    "mon": "nodemon -x ./gradlew an",
+    "mon": "nodemon -x ./gradlew elab",
     "gen": "ts-node scripts/generator.ts",
     "hierarchy": "ts-node scripts/hierarchy.ts",
     "compileScripts": "tsc"

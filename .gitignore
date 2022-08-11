@@ -14,3 +14,4 @@ yarn.lock
 # Ignore Gradle build output directory
 build
 *.log
+q2prj
