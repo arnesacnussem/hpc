@@ -1,4 +1,4 @@
--- generated from /workspaces/hpc/scripts/generator.ts
+-- generated from /workspaces/hpc/build/dist/generator.js
 LIBRARY ieee;
 PACKAGE types IS
     TYPE GEN_MAT IS ARRAY (0 TO 10, 0 TO 14) OF BIT;
@@ -13,4 +13,5 @@ PACKAGE types IS
     TYPE CODEWORD_SERIAL IS ARRAY (0 TO 224) OF BIT;
 
     TYPE REF_TABLE_ARR IS ARRAY (0 TO 14) OF INTEGER;
+    TYPE MATRIX_TYPE IS ARRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF BIT;
 END PACKAGE types;

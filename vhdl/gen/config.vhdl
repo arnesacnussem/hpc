@@ -1,8 +1,8 @@
--- generated from /workspaces/hpc/scripts/generator.ts
+-- generated from /workspaces/hpc/build/dist/generator.js
 library ieee;
 USE work.types.ALL;
 PACKAGE config IS
-    CONSTANT CHANNEL_ERROR_RATE : INTEGER := 6;
+    CONSTANT CHANNEL_ERROR_RATE : INTEGER := 3;
     -- MSG_LENGTH(k) = 11
     CONSTANT MSG_LENGTH : INTEGER := 10;
 

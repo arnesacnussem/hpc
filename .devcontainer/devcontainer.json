@@ -18,6 +18,11 @@
   "features": {},
   "customizations": {
     "vscode": {
+      "settings": {
+        "files.associations": {
+          "*.gradle": "groovy"
+        }
+      },
       "extensions": [
         "k--kato.intellij-idea-keybindings",
         "rjyoung.vscode-modern-vhdl-support",
@@ -33,7 +38,8 @@
         "Gruntfuggly.todo-tree",
         "wayou.vscode-todo-highlight",
         "redhat.java",
-        "richardwillis.vscode-gradle-extension-pack"
+        "richardwillis.vscode-gradle-extension-pack",
+        "NicolasVuillamy.vscode-groovy-lint"
       ]
     }
   }
