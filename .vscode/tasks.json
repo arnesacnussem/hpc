@@ -17,6 +17,7 @@
           "severity": 4,
           "message": 5
         },
+        "fileLocation": "absolute",
         "background": {
           "activeOnStart": true,
           "beginsPattern": "^\\[nodemon\\] starting .*",

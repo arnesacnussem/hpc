@@ -1,0 +1,93 @@
+/* groovylint-disable DuplicateStringLiteral, VariableTypeRequired */
+plugins {
+    id 'com.github.node-gradle.node' version '3.4.0'
+}
+buildDir = 'build'
+
+def ghdl = [
+    exec: 'ghdl',
+    workDir: buildDir,
+    args: ['--std=08'],
+    topLevel: 'channel_tb'
+]
+
+task compileScripts(type: YarnTask) {
+    group 'build:pre'
+    description 'Use tsc to compile helper scripts'
+
+    inputs.dir 'scripts'
+    outputs.dir "${buildDir}/dist"
+
+    args = ['compileScripts']
+}
+
+task genHierarchy(type: NodeTask) {
+    group 'build:pre'
+    description 'Generate vhdl hierarchy for ghdl analyze'
+    dependsOn compileScripts
+
+    inputs.files fileTree('vhdl')
+    String out = "${buildDir}/.list"
+    outputs.file out
+
+    script = file("${buildDir}/dist/hierarchy.js")
+    args = ['-q']
+    ext.list = {
+        return file(out).text.split(' ')
+    }
+}
+
+task analyze {
+    group 'build:ghdl'
+    description 'Run ghdl analyze'
+    dependsOn genHierarchy
+
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine = [ghdl.exec, '-a', ghdl.args, genHierarchy.list()].flatten()
+        }
+    }
+}
+
+task elaborate {
+    group 'build:ghdl'
+    description 'Elaborate design'
+    dependsOn analyze
+
+    inputs.files files('vhdl', "${buildDir}/.list")
+    outputs.dir buildDir
+
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine = [ghdl.exec, '-e', ghdl.args, ghdl.topLevel].flatten()
+        }
+    }
+}
+
+task run {
+    group 'build:ghdl'
+    description 'Run top-level design'
+    dependsOn elaborate
+
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw'].flatten()
+        }
+    }
+}
+
+task waveform {
+    group 'build:ghdl'
+    description 'Open waveform in GTKWave'
+    dependsOn run
+
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine 'gtkwave', '-f', 'wave.ghw'
+        }
+    }
+}

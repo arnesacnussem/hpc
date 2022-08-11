@@ -3,6 +3,12 @@ const package_name = /^package\s(.+)\sis$/gim;
 
 import fs from "fs";
 import path from "path";
+const clog = console.log;
+const silent = process.argv[2].toLowerCase() === "-q";
+if (silent) {
+  // ts-ignore
+  console.log = (msg) => {};
+}
 interface VHDLFile {
   name: string;
   path: string;
@@ -81,4 +87,8 @@ console.log("\n\n====DependBy====");
 nList.forEach((n) => {
   console.log(`${n.name} >> ${n.dependBy.join(", ")}`);
 });
-fs.writeFileSync("./vhdl.list", nList.map((n) => n.path).join(" "));
+fs.writeFileSync(
+  "build/.list",
+  nList.map((n) => path.resolve(n.path)).join(" ")
+);
+clog("Generated hierarchy list");

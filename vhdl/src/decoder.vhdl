@@ -1,72 +1,91 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
-USE work.types.ALL;
-USE work.config.ALL;
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use work.types.all;
+  use work.config.all;
 
-ENTITY decoder IS
-    PORT (
-        code  : IN CODEWORD_MAT; -- codeword matrix
-        chk   : IN CHK_MAT;      -- check matrix
-        msg   : OUT MSG_MAT;     -- message matrix
-        ready : OUT STD_LOGIC;   -- signal of work ready
-        rst   : IN STD_LOGIC;    -- reset ready status and clock of work
-        clk   : IN STD_LOGIC     -- clock
-    );
-END decoder;
+entity decoder is
+  port (
+    code  : in    CODEWORD_MAT; -- codeword matrix
+    chk   : in    CHK_MAT;      -- check matrix
+    msg   : out   MSG_MAT;      -- message matrix
+    ready : out   std_logic;    -- signal of work ready
+    rst   : in    std_logic;    -- reset ready status and clock of work
+    clk   : in    std_logic     -- clock
+  );
+end entity decoder;
 
-ARCHITECTURE Decoder OF decoder IS
-    PROCEDURE find (
-        VARIABLE val : IN INTEGER;
-        VARIABLE pos : OUT INTEGER
-    ) IS
-    BEGIN
-        pos := (-1);
-        FOR i IN 0 TO REF_TABLE'length - 1 LOOP
-            IF REF_TABLE(i) = val THEN
-                pos := i;
-            END IF;
-        END LOOP;
-    END PROCEDURE;
+architecture decoder of decoder is
 
-    PROCEDURE Hdecode (
-        VARIABLE lin             : IN CODEWORD_LINE;
-        VARIABLE err_exist       : OUT STD_LOGIC;
-        VARIABLE err_correctable : OUT STD_LOGIC;
-        VARIABLE err_position    : OUT STD_LOGIC
-    ) IS
-        VARIABLE syndrome : BIT_VECTOR(0 TO CHECK_LENGTH);
-        VARIABLE dSyn     : INTEGER;
-        VARIABLE pos      : INTEGER;
-    BEGIN
-        syndrome := (OTHERS => '0');
-        FOR col IN 0 TO CODEWORD_LENGTH LOOP
-            FOR row IN 0 TO CHECK_LENGTH LOOP
-                syndrome(col) := (lin(row) AND chk(row, col)) XOR syndrome(col);
-            END LOOP;
-        END LOOP;
+  procedure find (
+    VARIABLE val : IN integer;
+    VARIABLE pos : OUT integer
+  ) is
+  begin
 
-        dSyn := to_integer(unsigned(to_stdlogicvector(syndrome)));
-        IF dSyn = 0 THEN
-            err_exist       := '0';
-            err_correctable := '0';
-            err_position    := '0';
-        ELSE
-            err_exist := '1';
-            find(val => dSyn, pos => pos);
-            IF pos = (-1) THEN
+    pos := (-1);
 
-            END IF;
-        END IF;
-    END PROCEDURE;
+    for i IN 0 to REF_TABLE'length - 1 loop
 
-BEGIN
-    PROCESS
-    BEGIN
-        REPORT "[DEC] Decoding first round.";
-        decode_lines_r1 : FOR L IN 0 TO CODEWORD_LENGTH LOOP
+      if (REF_TABLE(i) = val) then
+        pos := i;
+      end if;
 
-        END LOOP; -- decode_lines_r1
-    END PROCESS;
+    end loop;
 
-END ARCHITECTURE;
+  end procedure;
+
+  procedure hdecode (
+    VARIABLE lin             : IN CODEWORD_LINE;
+    VARIABLE err_exist       : OUT std_logic;
+    VARIABLE err_correctable : OUT std_logic;
+    VARIABLE err_position    : OUT std_logic
+  ) is
+
+    variable syndrome : BIT_VECTOR(0 to CHECK_LENGTH);
+    variable dsyn     : integer;
+    variable pos      : integer;
+
+  begin
+
+    syndrome := (OTHERS => '0');
+
+    for col IN 0 to CODEWORD_LENGTH loop
+
+      for row IN 0 to CHECK_LENGTH loop
+
+        syndrome(col) := (lin(row) and chk(row, col)) xor syndrome(col);
+
+      end loop;
+
+    end loop;
+
+    dsyn := to_integer(unsigned(to_stdlogicvector(syndrome)));
+
+    if (dsyn = 0) then
+      err_exist       := '0';
+      err_correctable := '0';
+      err_position    := '0';
+    else
+      err_exist := '1';
+      find(val => dsyn, pos => pos);
+      if (pos = (-1)) then
+      end if;
+    end if;
+
+  end procedure;
+
+begin
+
+  process is
+  begin
+
+    report "[DEC] Decoding first round.";
+
+    decode_lines_r1 : for L IN 0 to CODEWORD_LENGTH loop
+
+    end loop; -- decode_lines_r1
+
+  end process;
+
+end architecture decoder;
