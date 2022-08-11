@@ -1,14 +1,33 @@
-/* groovylint-disable DuplicateStringLiteral, VariableTypeRequired */
+/* groovylint-disable BuilderMethodWithSideEffects, DuplicateStringLiteral, FactoryMethodName, LineLength, UnusedMethodParameter, VariableTypeRequired */
 plugins {
     id 'com.github.node-gradle.node' version '3.4.0'
 }
-buildDir = 'build'
 
+class CustomEventLogger extends BuildAdapter implements TaskExecutionListener {
+
+    void beforeExecute(Task task) {
+        super()
+    }
+    void afterExecute(Task task, TaskState state) {
+        super()
+    }
+    void buildFinished(BuildResult result) {
+        if (result.failure != null) {
+            println '\033[31;1mBUILD FAILED\033[0m'
+        } else {
+            println '\033[32;1mBUILD SUCCESS\033[0m'
+        }
+    }
+
+}
+gradle.useLogger(new CustomEventLogger())
+
+buildDir = 'build'
 def ghdl = [
-    exec: 'ghdl',
-    workDir: buildDir,
-    args: ['--std=08'],
-    topLevel: 'channel_tb'
+        exec: 'ghdl',
+        workDir: buildDir,
+        args: ['--std=08', '-fcolor-diagnostics'],
+        topLevel: 'matrix_io_tb'
 ]
 
 task compileScripts(type: YarnTask) {
@@ -21,10 +40,21 @@ task compileScripts(type: YarnTask) {
     args = ['compileScripts']
 }
 
-task genHierarchy(type: NodeTask) {
+task vhdlGen(type:NodeTask) {
+    group 'build:pre'
+    description 'Generate pre-defined vhdl'
+    dependsOn compileScripts
+
+    inputs.files files("${buildDir}/dist", 'scripts/*.m')
+    outputs.dir 'vhdl/gen'
+
+    script = file("$buildDir/dist/generator.js")
+}
+
+task hierarchy(type: NodeTask) {
     group 'build:pre'
     description 'Generate vhdl hierarchy for ghdl analyze'
-    dependsOn compileScripts
+    dependsOn vhdlGen
 
     inputs.files fileTree('vhdl')
     String out = "${buildDir}/.list"
@@ -40,12 +70,12 @@ task genHierarchy(type: NodeTask) {
 task analyze {
     group 'build:ghdl'
     description 'Run ghdl analyze'
-    dependsOn genHierarchy
+    dependsOn hierarchy
 
     doLast {
         exec {
             workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-a', ghdl.args, genHierarchy.list()].flatten()
+            commandLine = [ghdl.exec, '-a', ghdl.args, hierarchy.list()].flatten()
         }
     }
 }
@@ -90,4 +120,22 @@ task waveform {
             commandLine 'gtkwave', '-f', 'wave.ghw'
         }
     }
+}
+
+task clean {
+    group 'build'
+    description 'Cleanup workspace'
+
+    doLast {
+        delete "$buildDir"
+    }
+}
+
+task build {
+    group 'build'
+    dependsOn elaborate
+}
+
+delete fileTree('./') {
+    include 'hs_err_*.log'
 }
