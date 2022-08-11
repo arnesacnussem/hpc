@@ -3,6 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.test_values.ALL;
+USE work.utils.ALL;
 
 ENTITY matrix_io_tb IS
 END;
@@ -18,7 +19,7 @@ ARCHITECTURE bench OF matrix_io_tb IS
         );
         PORT (
             io_port : INOUT BIT_VECTOR(0 TO IO_WIDTH - 1);
-            matrix  : OUT MATRIX_TYPE(0 TO COL_CNT - 1, 0 TO ROW_CNT - 1);
+            matrix  : OUT MATRIX_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
             clk     : IN STD_LOGIC;
             ready   : OUT STD_LOGIC
         );
@@ -27,17 +28,17 @@ ARCHITECTURE bench OF matrix_io_tb IS
     -- Clock period
     CONSTANT clk_period : TIME := 5 ns;
     -- Generics
-    CONSTANT COL_CNT  : NATURAL            := 11;
-    CONSTANT ROW_CNT  : NATURAL            := 11;
-    CONSTANT IO_WIDTH : NATURAL            := 1;
-    CONSTANT IO_MODE  : BIT_VECTOR(0 TO 1) := "01";
+    CONSTANT COL_CNT  : NATURAL            := MESSAGE_MATRIX'length;
+    CONSTANT ROW_CNT  : NATURAL            := MESSAGE_MATRIX(0)'length;
+    CONSTANT IO_WIDTH : NATURAL            := 11;
+    CONSTANT IO_MODE  : BIT_VECTOR(0 TO 1) := "00";
 
     -- Ports
-    SIGNAL io_port : BIT_VECTOR(0 TO IO_WIDTH - 1);
-    SIGNAL matrix  : MATRIX_TYPE(0 TO COL_CNT - 1, 0 TO ROW_CNT - 1);
-    SIGNAL clk     : STD_LOGIC;
-    SIGNAL ready   : STD_LOGIC;
-
+    SIGNAL io_port     : BIT_VECTOR(0 TO IO_WIDTH - 1);
+    SIGNAL matrix      : MATRIX_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+    SIGNAL clk         : STD_LOGIC := '0';
+    SIGNAL ready       : STD_LOGIC;
+    SIGNAL input_ready : STD_LOGIC := '0';
 BEGIN
 
     matrix_io_inst : matrix_io
@@ -56,27 +57,30 @@ BEGIN
 
     clk_process : PROCESS
     BEGIN
-        clk <= '1';
+        clk <= NOT clk;
         WAIT FOR clk_period/2;
-        clk <= '0';
-        WAIT FOR clk_period/2;
-        IF ready = '1' THEN
+        IF (IO_MODE = "00" AND input_ready = '1') OR (IO_MODE /= "00" AND ready = '1') THEN
+            REPORT "END OF TEST";
+            FOR i IN matrix'RANGE LOOP
+                REPORT "matrix[" & INTEGER'image(i) & "]->" & bVecToString(bit_vector(matrix(i)));
+            END LOOP;
             WAIT;
         END IF;
     END PROCESS clk_process;
 
     input_test : PROCESS (clk)
-        VARIABLE pos  : NATURAL := 0;
-        VARIABLE pos2 : NATURAL := 0;
-        VARIABLE tmp  : BIT_VECTOR(0 TO IO_WIDTH - 1);
+        VARIABLE pos : NATURAL := 0;
     BEGIN
         IF pos < MESSAGE_SERIAL'length THEN
             IF rising_edge(clk) THEN
                 FOR i IN io_port'RANGE LOOP
                     io_port(i) <= MESSAGE_SERIAL(pos + i);
                 END LOOP;
+                REPORT "io_port[" & INTEGER'image(pos) & "]->" & bVecToString(io_port);
                 pos := pos + IO_WIDTH;
             END IF;
+        ELSE
+            input_ready <= '1';
         END IF;
     END PROCESS;
 

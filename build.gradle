@@ -49,6 +49,9 @@ task vhdlGen(type:NodeTask) {
     outputs.dir 'vhdl/gen'
 
     script = file("$buildDir/dist/generator.js")
+    finalizedBy {
+        copy2q2prj
+    }
 }
 
 task hierarchy(type: NodeTask) {
@@ -136,6 +139,21 @@ task build {
     dependsOn elaborate
 }
 
-delete fileTree('./') {
+delete fileTree('.') {
     include 'hs_err_*.log'
+}
+
+task copy2q2prj {
+    description 'copy sources to quartus project dir'
+    inputs.dir 'vhdl'
+    outputs.dir 'q2prj'
+
+    doLast {
+        copy {
+            from fileTree('vhdl') {
+                include '**/*.vhdl'
+            }.files
+            into 'q2prj'
+        }
+    }
 }
