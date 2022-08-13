@@ -27,7 +27,7 @@ def ghdl = [
         exec: 'ghdl',
         workDir: buildDir,
         args: ['--std=08', '-fcolor-diagnostics'],
-        topLevel: 'matrix_io_tb'
+        topLevel: 'top_level'
 ]
 
 task compileScripts(type: YarnTask) {

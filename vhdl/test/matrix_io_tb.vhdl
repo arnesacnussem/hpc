@@ -19,7 +19,7 @@ ARCHITECTURE bench OF matrix_io_tb IS
         );
         PORT (
             io_port : INOUT BIT_VECTOR(0 TO IO_WIDTH - 1);
-            matrix  : OUT MATRIX_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+            matrix  : OUT MXIO_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
             clk     : IN STD_LOGIC;
             ready   : OUT STD_LOGIC
         );
@@ -31,11 +31,11 @@ ARCHITECTURE bench OF matrix_io_tb IS
     CONSTANT COL_CNT  : NATURAL            := MESSAGE_MATRIX'length;
     CONSTANT ROW_CNT  : NATURAL            := MESSAGE_MATRIX(0)'length;
     CONSTANT IO_WIDTH : NATURAL            := 11;
-    CONSTANT IO_MODE  : BIT_VECTOR(0 TO 1) := "00";
+    CONSTANT IO_MODE  : BIT_VECTOR(0 TO 1) := "01";
 
     -- Ports
     SIGNAL io_port     : BIT_VECTOR(0 TO IO_WIDTH - 1);
-    SIGNAL matrix      : MATRIX_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+    SIGNAL matrix      : MXIO_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
     SIGNAL clk         : STD_LOGIC := '0';
     SIGNAL ready       : STD_LOGIC;
     SIGNAL input_ready : STD_LOGIC := '0';

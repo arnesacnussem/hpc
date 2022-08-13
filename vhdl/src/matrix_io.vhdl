@@ -15,7 +15,7 @@ ENTITY matrix_io IS
     );
     PORT (
         io_port : INOUT BIT_VECTOR(0 TO IO_WIDTH - 1);
-        matrix  : OUT MATRIX_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+        matrix  : OUT MXIO_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
         clk     : IN STD_LOGIC;
         -- 使用buffer时，完整处理一次矩阵后置高ready信号至下一个时钟信号
         -- 不使用Buffer时，ready始终为高电平
@@ -107,7 +107,7 @@ BEGIN
             VARIABLE col : NATURAL := 0;
             VARIABLE row : NATURAL := 0;
             VARIABLE rdy : BOOLEAN := false;
-            VARIABLE buf : MATRIX_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+            VARIABLE buf : MXIO_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
         BEGIN
             IF rising_edge(clk) THEN
                 IF ready = '1' THEN

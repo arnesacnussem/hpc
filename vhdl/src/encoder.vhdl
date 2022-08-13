@@ -7,7 +7,6 @@ USE work.config.ALL;
 ENTITY encoder IS
     PORT (
         msg     : IN MSG_MAT;       -- message matrix
-        gen     : IN GEN_MAT;       -- generator matrix
         encoded : OUT CODEWORD_MAT; -- codeword matrix
         ready   : OUT STD_LOGIC;    -- signal of work ready
         rst     : IN STD_LOGIC;     -- reset ready status and clock of work
@@ -27,12 +26,12 @@ ARCHITECTURE Encoder OF encoder IS
         lout := (OTHERS => '0');
         FOR col IN 0 TO CODEWORD_LENGTH LOOP
             FOR row IN 0 TO MSG_LENGTH LOOP
-                lout(col) := (lin(row) AND gen(row, col)) XOR lout(col);
+                lout(col) := (lin(row) AND GENERATE_MATRIX(row, col)) XOR lout(col);
             END LOOP;
         END LOOP;
     END PROCEDURE;
 BEGIN
-    encoding : PROCESS (msg, gen, clk, rst)
+    encoding : PROCESS (msg, clk, rst)
         VARIABLE temp            : HALF_CODEMSG_MAT;
         VARIABLE temp_transposed : HALF_CODEMSG_MAT_TRANSPOSED;
         VARIABLE codeword        : CODEWORD_MAT;
@@ -45,22 +44,22 @@ BEGIN
         ELSIF rising_edge(clk) THEN
 
             REPORT "[ENC] Encoding first round.";
-            encode_lines_r1 : FOR L IN 0 TO MSG_LENGTH LOOP
-                msg_lin := msg(L);
-                line_encoder(lin => msg_lin, lout => temp(L));
+            encode_lines_r1 : FOR row IN msg'RANGE LOOP
+                msg_lin := msg(row);
+                line_encoder(lin => msg_lin, lout => temp(row));
             END LOOP; -- encode_lines_r1
 
             REPORT "[ENC] Transpose.";
-            transpose_temp : FOR row IN 0 TO temp'length - 1 LOOP
+            transpose_temp : FOR row IN temp'RANGE LOOP
                 FOR col IN 0 TO temp(0)'length - 1 LOOP
                     temp_transposed(col)(row) := temp(row)(col);
                 END LOOP;
             END LOOP; -- transpose_temp
 
             REPORT "[ENC] Encoding second round.";
-            encode_lines_r2 : FOR L IN 0 TO CODEWORD_LENGTH LOOP
-                msg_lin := temp_transposed(L);
-                line_encoder(lin => msg_lin, lout => codeword(L));
+            encode_lines_r2 : FOR row IN CODEWORD_MAT'RANGE LOOP
+                msg_lin := temp_transposed(row);
+                line_encoder(lin => msg_lin, lout => codeword(row));
             END LOOP; -- encode_lines_r2
             ready <= '1';
             REPORT "Finished encoding";
