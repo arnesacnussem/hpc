@@ -1,6 +1,6 @@
 FROM sacnussem/devcontainer:hpc-focal-quartus
 
-RUN wget https://raw.githubusercontent.com/arnesacnussem/hpc/main/.devcontainer/.bashrc?token=GHSAT0AAAAAABWKFAILGCWWHGKPKQT5EHRSYXZFJKQ -O /home/vscode/.bashrc
+COPY .bashrc /home/vscode/
 RUN apt-get update && apt-get install -y libgnat-9 zlib1g-dev
 RUN pip3 install teroshdl
 RUN wget -q --show-progress --progress=bar:force:noscroll -O- https://github.com/YosysHQ/oss-cad-suite-build/releases/download/$(date +%Y-%m-%d --date="yesterday" -u)/oss-cad-suite-linux-x64-$(date +%Y%m%d --date="yesterday" -u).tgz | tar zxf - -C /opt

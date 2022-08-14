@@ -3,6 +3,7 @@
 # and commit this file to your remote git repository to share the goodness with others.
 
 image:
-  file: .devcontainer/Dockerfile
+  file: Dockerfile
+  context: .devcontainer
 
 
