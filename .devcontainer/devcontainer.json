@@ -39,7 +39,8 @@
         "wayou.vscode-todo-highlight",
         "redhat.java",
         "richardwillis.vscode-gradle-extension-pack",
-        "NicolasVuillamy.vscode-groovy-lint"
+        "NicolasVuillamy.vscode-groovy-lint",
+        "eamodio.gitlens"
       ]
     }
   }

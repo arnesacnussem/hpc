@@ -1,4 +1,4 @@
 export const gencfg = {
-  check_bits: 4,
+  check_bits: 3,
   output: "vhdl/gen",
 };

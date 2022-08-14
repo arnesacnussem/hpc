@@ -4,15 +4,17 @@ USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
 USE work.types.ALL;
 
-ENTITY encoder_mxio IS
+ENTITY decoder_mxio IS
     GENERIC (
         MSG_RATIO  : POSITIVE := MSG_SERIAL'length;
         CODE_RATIO : POSITIVE := CODEWORD_SERIAL'length;
-        IO_MODE    : BIT_VECTOR(0 TO 1)
+        -- [0]: 输入缓存
+        -- [1]: 输出填充
+        IO_CONTROL : BIT_VECTOR(0 TO 1) := "10"
     );
     PORT (
-        msg  : IN MSG_SERIAL;
-        code : IN CODEWORD_SERIAL;
-        clk  : IN STD_LOGIC
+        clk   : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+
     );
 END ENTITY;

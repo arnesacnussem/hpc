@@ -9,57 +9,45 @@ ENTITY encoder_tb IS
 END;
 
 ARCHITECTURE bench OF encoder_tb IS
-
-    COMPONENT encoder
-        PORT (
-            msg     : IN MSG_MAT;
-            gen     : IN GEN_MAT;
-            encoded : OUT CODEWORD_MAT;
-            ready    : OUT STD_LOGIC;
-            rst     : IN STD_LOGIC;
-            clk     : IN STD_LOGIC
-        );
-    END COMPONENT;
-
     -- Clock period
     CONSTANT clk_period : TIME := 5 ns;
     -- Generics
 
     -- Ports
-    SIGNAL msg     : MSG_MAT := MESSAGE_MATRIX;
-    SIGNAL gen     : GEN_MAT := GENERATE_MATRIX;
-    SIGNAL encoded : CODEWORD_MAT;
-    SIGNAL ready    : STD_LOGIC;
-    SIGNAL rst     : STD_LOGIC := '0';
-    SIGNAL clk     : STD_LOGIC := '0';
-
+    SIGNAL msg   : MSG_MAT := MESSAGE_MATRIX;
+    SIGNAL code  : CODEWORD_MAT;
+    SIGNAL ready : STD_LOGIC;
+    SIGNAL rst   : STD_LOGIC := '0';
+    SIGNAL clk   : STD_LOGIC := '0';
+    SIGNAL exit1 : BOOLEAN   := false;
 BEGIN
 
-    encoder_inst : encoder
-    PORT MAP(
-        msg     => msg,
-        gen     => gen,
-        encoded => encoded,
-        ready    => ready,
-        rst     => rst,
-        clk     => clk
-    );
+    encoder_inst : ENTITY work.encoder
+        PORT MAP(
+            msg   => msg,
+            code  => code,
+            ready => ready,
+            rst   => rst,
+            clk   => clk
+        );
+
     PROCESS
+
     BEGIN
-        rst <= '1';
+        clk <= NOT clk;
         WAIT FOR 1 ps;
-        rst <= '0';
-        WAIT FOR 1 ps;
-        clk <= '1';
-        WAIT FOR 1 ps;
-        WAIT;
+        IF exit1 THEN
+            WAIT;
+        END IF;
     END PROCESS;
 
     PROCESS
     BEGIN
-        WAIT ON ready;
-        WAIT UNTIL rising_edge(ready);
-        REPORT "ready!!!!!";
+        WAIT UNTIL ready = '1';
+        WAIT UNTIL rising_edge(clk);
+        rst <= '1';
+        WAIT UNTIL rising_edge(clk);
+        exit1 <= true;
         WAIT;
     END PROCESS;
 END;

@@ -1,12 +1,13 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+USE ieee.numeric_bit.ALL;
 USE work.types.ALL;
 ENTITY matrix_io IS
     GENERIC (
-        COL_CNT  : NATURAL := 1; -- 矩阵列数
-        ROW_CNT  : NATURAL := 1; -- 矩阵行数
-        IO_WIDTH : NATURAL := 1; -- 外部输入输出位宽
+        COL_CNT  : POSITIVE := 1; -- 矩阵列数
+        ROW_CNT  : POSITIVE := 1; -- 矩阵行数
+        IO_WIDTH : POSITIVE := 1; -- 外部输入输出位宽
 
         -- IO模式(2bit)
         -- [0] 指定输入输出模式：0为输入（转为矩阵），1为输出（转自矩阵）
@@ -14,13 +15,13 @@ ENTITY matrix_io IS
         IO_MODE : BIT_VECTOR(0 TO 1) := (OTHERS => '0')
     );
     PORT (
-        io_port : INOUT BIT_VECTOR(0 TO IO_WIDTH - 1);
-        matrix  : OUT MXIO_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
-        clk     : IN STD_LOGIC;
+        io_port : INOUT BIT_VECTOR(0 TO IO_WIDTH - 1) := (OTHERS => '0');
+        matrix  : INOUT MXIO(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+        clk     : IN STD_LOGIC := '0';
         -- 使用buffer时，完整处理一次矩阵后置高ready信号至下一个时钟信号
         -- 不使用Buffer时，ready始终为高电平
         -- 输出模式忽略buffer设置
-        ready : OUT STD_LOGIC
+        ready : OUT STD_LOGIC := '0'
     );
 END matrix_io;
 
@@ -107,7 +108,7 @@ BEGIN
             VARIABLE col : NATURAL := 0;
             VARIABLE row : NATURAL := 0;
             VARIABLE rdy : BOOLEAN := false;
-            VARIABLE buf : MXIO_TYPE(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
+            VARIABLE buf : MXIO(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
         BEGIN
             IF rising_edge(clk) THEN
                 IF ready = '1' THEN

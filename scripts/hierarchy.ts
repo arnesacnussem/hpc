@@ -1,37 +1,43 @@
-const work_package = /^use\swork\.(.+)\.all;$/gim;
+const pakcage_dep = /^use\swork\.(.+)\.all;$/gim;
 const package_name = /^package\s(.+)\sis$/gim;
+const entity_name = /^ENTITY\s(.+)\sIS$/gim;
+const entity_deps = /^\s*.+\s?\:\s?ENTITY\swork\.(.+)$/gim;
 
 import fs from "fs";
 import path from "path";
 const clog = console.log;
-const silent = process.argv[2].toLowerCase() === "-q";
-if (silent) {
-  // ts-ignore
-  console.log = (msg) => {};
-}
 interface VHDLFile {
   name: string;
   path: string;
   package: string | "";
-  dependsOn: string[];
+  entity: string | "";
+  packageDeps: string[];
+  entityDeps: string[];
 }
 type VHDLDict = { [key: string]: VHDLFile };
-const listFiles = (): string[] => {
-  const files = ["gen", "src", "test"]
-    .map((d) => path.join("vhdl", d))
-    .flatMap((d) => fs.readdirSync(d).map((t) => path.join(d, t)));
-  console.log(files);
-  return files;
+const listFiles = (file?: string): string[] => {
+  const filePath = file || "vhdl";
+  return fs.readdirSync(path.resolve(filePath)).flatMap((f) => {
+    const fp = path.join(filePath, f);
+    if (fs.lstatSync(fp).isDirectory()) return listFiles(fp);
+    else return fp.match(/.*\.vhdl$/gim) ? fp : [];
+  });
 };
 const readFile = (filePath: string): VHDLFile => {
   const content = fs.readFileSync(filePath).toString();
   const file = {
     name: path.parse(filePath).name,
     path: filePath,
-    dependsOn: [...content.matchAll(work_package)].map((m) => m[1]),
+    packageDeps: [...content.matchAll(pakcage_dep)].map((m) => m[1]),
+    entityDeps: [...content.matchAll(entity_deps)].map((m) => m[1]),
     package: [...content.matchAll(package_name)].map((m) => m[1])[0] || "",
+    entity: [...content.matchAll(entity_name)].map((m) => m[1])[0] || "",
   };
-  console.log(`${filePath} depends on ${file.dependsOn.join(", ")}`);
+  console.log(
+    `${filePath} depends on ${[...file.packageDeps, ...file.entityDeps].join(
+      ", "
+    )}`
+  );
   return file;
 };
 
@@ -47,7 +53,11 @@ const buildDepBy = (dict: VHDLDict, list: VHDLFile[]) => {
   // create the dependBy map
   list.forEach((vhdl) => {
     const dpBy = list
-      .filter((vl) => vl.dependsOn.includes(vhdl.name))
+      .filter(
+        (vl) =>
+          vl.packageDeps.includes(vhdl.name) ||
+          vl.entityDeps.includes(vhdl.entity)
+      )
       .map((v) => v.name);
     rdag[vhdl.name] = {
       ...vhdl,
@@ -58,12 +68,12 @@ const buildDepBy = (dict: VHDLDict, list: VHDLFile[]) => {
   // update prior of each
   const fileList = Object.keys(rdag)
     .sort((a, b) => {
-      const s1 = rdag[b].dependBy.length - rdag[a].dependBy.length;
-      if (s1 !== 0) return s1;
-      else {
-        if (a in rdag[b].dependBy) return 1;
-        else return -1;
-      }
+      if (
+        rdag[a].dependBy.includes(rdag[b].name) ||
+        rdag[a].dependBy.includes(rdag[b].entity)
+      )
+        return -1;
+      else return 1;
     })
     .map((k) => rdag[k]);
   console.log(
@@ -91,4 +101,4 @@ fs.writeFileSync(
   "build/.list",
   nList.map((n) => path.resolve(n.path)).join(" ")
 );
-clog("Generated hierarchy list");
+console.log("Generated hierarchy list");
