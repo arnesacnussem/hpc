@@ -16,7 +16,7 @@ END ENTITY decoder;
 
 ARCHITECTURE decoder OF decoder IS
     TYPE state_t IS (R0, R1, R2, R3, RDY);
-    SIGNAL stat : state_t := R1;
+    SIGNAL stat : state_t := R0;
     PROCEDURE find (
         VARIABLE val : IN INTEGER;
         VARIABLE pos : OUT INTEGER
@@ -63,6 +63,7 @@ BEGIN
         VARIABLE row_vec : CODEWORD_LINE;
 
         VARIABLE code_tmp    : CODEWORD_MAT;
+        -- FIXME: 这个提取行好像搞得太复杂了
         VARIABLE column_temp : CODEWORD_LINE;
 
         VARIABLE index : NATURAL := 0;
@@ -140,7 +141,11 @@ BEGIN
                         IF index = CODEWORD_LINE'length THEN
                             REPORT "[DEC] round 3/3";
                             index := 0;
-                            stat <= R3;
+                            -- FIXME: 这地方估计写的不太对，code_tmp要转置一下好像才行
+                            FOR i IN msg'RANGE LOOP
+                                msg(i) <= code_tmp(i)(CHECK_LENGTH + 1 TO code_tmp(i)'length - 1);
+                            END LOOP;
+                            stat <= RDY;
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
