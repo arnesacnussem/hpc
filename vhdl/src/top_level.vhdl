@@ -15,7 +15,9 @@ ENTITY top_level IS
         OUT_FILL          : BIT      := '0'
     );
     PORT (
-        clk      : IN STD_LOGIC;
+        clk      : IN STD_LOGIC := '0';
+        dec_en   : IN STD_LOGIC := '0';
+        enc_en   : IN STD_LOGIC := '0';
         msg_in   : IN BIT_VECTOR(0 TO MSG_SERIAL'length / SERIAL_MSG_RATIO - 1);
         code_out : OUT BIT_VECTOR(0 TO CODEWORD_SERIAL'length / SERIAL_CODE_RATIO - 1);
         code_in  : IN BIT_VECTOR(0 TO CODEWORD_SERIAL'length / SERIAL_CODE_RATIO - 1);
@@ -27,7 +29,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF top_level IS
 BEGIN
-    enc_mxio_inst : ENTITY work.encoder_mxio
+    encoder_mxio_inst : ENTITY work.encoder_mxio
         GENERIC MAP(
             MSG_RATIO  => SERIAL_MSG_RATIO,
             CODE_RATIO => SERIAL_CODE_RATIO,
@@ -36,8 +38,20 @@ BEGIN
         PORT MAP(
             msg   => msg_in,
             code  => code_out,
-            clk   => clk,
+            clk   => enc_en AND clk,
             ready => enc_rdy
+        );
+    decoder_mxio_inst : ENTITY work.decoder_mxio
+        GENERIC MAP(
+            MSG_RATIO  => SERIAL_MSG_RATIO,
+            CODE_RATIO => SERIAL_CODE_RATIO,
+            IO_CONTROL => IN_BUFFER & OUT_FILL
+        )
+        PORT MAP(
+            code  => code_in,
+            msg   => msg_out,
+            clk   => dec_en AND clk,
+            ready => dec_rdy
         );
 
 END ARCHITECTURE;

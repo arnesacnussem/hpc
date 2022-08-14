@@ -4,7 +4,7 @@ USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
 USE work.types.ALL;
 
-ENTITY decoder_mxio IS
+ENTITY encoder_mxio IS
     GENERIC (
         MSG_RATIO  : POSITIVE := MSG_SERIAL'length;
         CODE_RATIO : POSITIVE := CODEWORD_SERIAL'length;
@@ -13,19 +13,20 @@ ENTITY decoder_mxio IS
         IO_CONTROL : BIT_VECTOR(0 TO 1) := "10"
     );
     PORT (
-        code  : IN BIT_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
-        msg   : OUT BIT_VECTOR(0 TO MSG_SERIAL'length / MSG_RATIO - 1);
+        msg   : IN BIT_VECTOR(0 TO MSG_SERIAL'length / MSG_RATIO - 1);
+        code  : OUT BIT_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
         clk   : IN STD_LOGIC;
         ready : OUT STD_LOGIC
     );
 END ENTITY;
 
-ARCHITECTURE encoder_mxio OF decoder_mxio IS
+ARCHITECTURE encoder_mxio OF encoder_mxio IS
+
     SIGNAL msg_matrix  : MSG_MAT;
     SIGNAL code_matrix : CODEWORD_MAT;
     SIGNAL rst         : STD_LOGIC              := '0';
-    SIGNAL in_port     : BIT_VECTOR(code'RANGE) := code;
-    SIGNAL out_port    : BIT_VECTOR(msg'RANGE)  := msg;
+    SIGNAL in_port     : BIT_VECTOR(msg'RANGE)  := msg;
+    SIGNAL out_port    : BIT_VECTOR(code'RANGE) := code;
 
     -- [0] mxio_in_ready
     -- [1] codec_ready
@@ -36,34 +37,35 @@ ARCHITECTURE encoder_mxio OF decoder_mxio IS
     SIGNAL mxio_in_clk  : STD_LOGIC;
     SIGNAL codec_clk    : STD_LOGIC;
     SIGNAL mxio_out_clk : STD_LOGIC;
-BEGIN
-    dec_mxio_in : ENTITY work.matrix_io
-        GENERIC MAP(
-            COL_CNT  => CODEWORD_LINE'length,
-            ROW_CNT  => CODEWORD_MAT'length,
-            IO_WIDTH => code'length,
-            IO_MODE  => '0' & IO_CONTROL(0)
-        )
-        PORT MAP(
-            io_port => in_port,
-            matrix  => code_matrix,
-            clk     => mxio_in_clk,
-            ready   => state(0)
-        );
 
-    decoder_inst : ENTITY work.decoder
-        PORT MAP(
-            code  => code_matrix,
-            msg   => msg_matrix,
-            ready => state(1),
-            rst   => rst,
-            clk   => codec_clk
-        );
-    dec_mxio_out : ENTITY work.matrix_io
+BEGIN
+    enc_mxio_in : ENTITY work.matrix_io
         GENERIC MAP(
             COL_CNT  => MSG_LINE'length,
             ROW_CNT  => MSG_MAT'length,
             IO_WIDTH => msg'length,
+            IO_MODE  => '0' & IO_CONTROL(0)
+        )
+        PORT MAP(
+            io_port => in_port,
+            matrix  => msg_matrix,
+            clk     => mxio_in_clk,
+            ready   => state(0)
+        );
+
+    encoder_inst : ENTITY work.encoder
+        PORT MAP(
+            msg   => msg_matrix,
+            code  => code_matrix,
+            ready => state(1),
+            rst   => rst,
+            clk   => codec_clk
+        );
+    enc_mxio_out : ENTITY work.matrix_io
+        GENERIC MAP(
+            COL_CNT  => CODEWORD_LINE'length,
+            ROW_CNT  => CODEWORD_MAT'length,
+            IO_WIDTH => code'length,
             IO_MODE  => '1' & IO_CONTROL(1)
         )
         PORT MAP(
@@ -72,11 +74,10 @@ BEGIN
             clk     => mxio_out_clk,
             ready   => state(2)
         );
-
     PROCESS (ALL)
     BEGIN
-        in_port <= code;
-        msg     <= out_port;
+        in_port <= msg;
+        code    <= out_port;
         ready   <= state(2);
         CASE state IS
             WHEN "000" =>
@@ -97,4 +98,5 @@ BEGIN
                 mxio_out_clk <= '0';
         END CASE;
     END PROCESS;
+
 END ARCHITECTURE;
