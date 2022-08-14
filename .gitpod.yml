@@ -7,3 +7,11 @@ image:
   context: .devcontainer
 
 
+tasks:
+  - name: xpra server
+    command: xpra start :100 --pulseaudio=no --bind-tcp=0.0.0.0:14500
+
+ports:
+  - name: xpra
+    port: 14500
+    onOpen: open-browser
