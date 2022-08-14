@@ -12,7 +12,9 @@ PACKAGE ${pkgName} IS
     TYPE MXIO IS ARRAY(NATURAL RANGE <>) OF MXIO_ROW;
 
     TYPE GEN_MAT IS ARRAY (0 TO ${k - 1}, 0 TO ${n - 1}) OF BIT;
-    TYPE CHK_MAT IS ARRAY (0 TO ${h.length - 1}, 0 TO ${n - 1}) OF BIT;
+    TYPE CHK_MAT IS ARRAY (0 TO ${h.length - 1}, 0 TO ${
+    h[0].length - 1
+  }) OF BIT;
 
     SUBTYPE MSG_LINE IS MXIO_ROW (0 TO ${k - 1});
     SUBTYPE MSG_MAT IS MXIO (0 TO ${k - 1}) (0 TO ${k - 1});

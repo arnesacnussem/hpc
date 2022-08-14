@@ -15,7 +15,7 @@ ENTITY decoder IS
 END ENTITY decoder;
 
 ARCHITECTURE decoder OF decoder IS
-    TYPE state_t IS (R1, R2, R3, RDY);
+    TYPE state_t IS (R0, R1, R2, R3, RDY);
     SIGNAL stat : state_t := R1;
     PROCEDURE find (
         VARIABLE val : IN INTEGER;
@@ -40,9 +40,9 @@ ARCHITECTURE decoder OF decoder IS
         VARIABLE pos      : INTEGER := (-1);
     BEGIN
         syndrome := (OTHERS => '0');
-        FOR col IN lin'RANGE LOOP
-            FOR row IN syndrome'RANGE LOOP
-                syndrome(col) := (lin(row) AND CHECK_MATRIX(row, col)) XOR syndrome(col);
+        FOR row IN syndrome'RANGE LOOP
+            FOR col IN lin'RANGE LOOP
+                syndrome(row) := (lin(col) AND CHECK_MATRIX(col, row)) XOR syndrome(row);
             END LOOP;
         END LOOP;
 
@@ -67,14 +67,16 @@ BEGIN
 
         VARIABLE index : NATURAL := 0;
     BEGIN
-        code_tmp := code;
         IF rising_edge(clk) THEN
             IF rst = '1' THEN
                 msg   <= (OTHERS => MXIO_ROW(ieee.numeric_bit.to_unsigned(0, msg(0)'length)));
                 ready <= '0';
-                stat  <= R1;
+                stat  <= R0;
             ELSE
                 CASE stat IS
+                    WHEN R0 =>
+                        code_tmp := code;
+                        stat <= R1;
                     WHEN R1 =>
                         line_decode(code_tmp(index), err_exist, err_pos);
                         IF err_exist THEN

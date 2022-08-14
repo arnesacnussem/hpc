@@ -68,7 +68,7 @@ BEGIN
         )
         PORT MAP(
             io_port => out_port,
-            matrix  => code_matrix,
+            matrix  => msg_matrix,
             clk     => mxio_out_clk,
             ready   => state(2)
         );

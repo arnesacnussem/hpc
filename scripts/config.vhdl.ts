@@ -14,8 +14,8 @@ PACKAGE ${pkgName} IS
     ${comment("CODEWORD_LENGTH(n) = " + k)}
     CONSTANT CODEWORD_LENGTH : INTEGER := ${n - 1};
 
-    ${comment("CHECK_LENGTH = " + h.length)}
-    CONSTANT CHECK_LENGTH    : INTEGER := ${h.length - 1};
+    ${comment("CHECK_LENGTH = " + h[0].length)}
+    CONSTANT CHECK_LENGTH    : INTEGER := ${h[0].length - 1};
     CONSTANT GENERATE_MATRIX : GEN_MAT := (
         ${g
           .map((l, i) => i.toString().concat(' => "').concat(l).concat('"'))
