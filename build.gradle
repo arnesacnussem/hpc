@@ -27,12 +27,13 @@ def ghdl = [
         exec: 'ghdl',
         workDir: buildDir,
         args: ['--std=08', '-fcolor-diagnostics'],
-        topLevel: 'top_level'
+        topLevel: 'encoder_mxio_tb'
 ]
 
 task compileScripts(type: YarnTask) {
     group 'build:pre'
     description 'Use tsc to compile helper scripts'
+    dependsOn yarn
 
     inputs.dir 'scripts'
     outputs.dir "${buildDir}/dist"
@@ -64,7 +65,6 @@ task hierarchy(type: NodeTask) {
     outputs.file out
 
     script = file("${buildDir}/dist/hierarchy.js")
-    args = ['-q']
     ext.list = {
         return file(out).text.split(' ')
     }
@@ -107,7 +107,7 @@ task run {
     doLast {
         exec {
             workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw'].flatten()
+            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns', '--disp-time'].flatten()
         }
     }
 }
