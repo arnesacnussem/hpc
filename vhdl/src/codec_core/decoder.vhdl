@@ -139,6 +139,7 @@ BEGIN
                             END IF;
                         END IF;
 
+                        index := index + 1;
                         IF index = CODEWORD_LINE'length THEN
                             REPORT "[DEC] round 3/3";
                             index := 0;
