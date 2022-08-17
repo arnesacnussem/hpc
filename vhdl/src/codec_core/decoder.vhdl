@@ -3,6 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.config.ALL;
+USE work.utils.ALL;
 
 ENTITY decoder IS
     PORT (
@@ -62,7 +63,7 @@ BEGIN
         VARIABLE col_vec : CODEWORD_LINE;
         VARIABLE row_vec : CODEWORD_LINE;
 
-        VARIABLE code_tmp    : CODEWORD_MAT;
+        VARIABLE code_tmp : CODEWORD_MAT;
         -- FIXME: 这个提取行好像搞得太复杂了
         VARIABLE column_temp : CODEWORD_LINE;
 
@@ -149,6 +150,7 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
+                        REPORT LF & "[DEC] msg=" & MXIO_toString(msg);
                     WHEN OTHERS =>
                 END CASE;
             END IF;

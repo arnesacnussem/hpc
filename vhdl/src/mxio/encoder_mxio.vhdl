@@ -21,7 +21,6 @@ ENTITY encoder_mxio IS
 END ENTITY;
 
 ARCHITECTURE encoder_mxio OF encoder_mxio IS
-
     SIGNAL msg_matrix  : MSG_MAT;
     SIGNAL code_matrix : CODEWORD_MAT;
     SIGNAL rst         : STD_LOGIC              := '0';

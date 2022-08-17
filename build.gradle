@@ -107,7 +107,7 @@ task run {
     doLast {
         exec {
             workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns', '--disp-time'].flatten()
+            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns'].flatten()
         }
     }
 }
@@ -156,4 +156,13 @@ task copy2q2prj {
             into 'q2prj'
         }
     }
+}
+
+task elaborateTest {
+    def fList = fileTree('./vhdl/test/testbenchs') {
+        include '*.vhdl'
+         }.collect {
+            f -> f.name - ~/\.\w+$/
+    }
+    println fList
 }

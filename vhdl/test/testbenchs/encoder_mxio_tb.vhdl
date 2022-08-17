@@ -50,7 +50,6 @@ BEGIN
     PROCESS
         VARIABLE pos : NATURAL := 0;
     BEGIN
-        WAIT UNTIL rising_edge(clk);
         IF pos < MESSAGE_SERIAL'length THEN
             FOR i IN msg'RANGE LOOP
                 msg(i) <= MESSAGE_SERIAL(pos + i);
@@ -64,5 +63,6 @@ BEGIN
             exit1 <= true;
             WAIT;
         END IF;
+        WAIT UNTIL rising_edge(clk);
     END PROCESS;
 END;

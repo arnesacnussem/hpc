@@ -3,6 +3,8 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_bit.ALL;
 USE work.types.ALL;
 USE work.config.ALL;
+USE work.utils.ALL;
+
 ENTITY encoder IS
     PORT (
         msg   : IN MSG_MAT;           -- message matrix
@@ -45,6 +47,7 @@ BEGIN
         IF rising_edge(clk) THEN
             IF rst = '1' THEN
                 codeword := (OTHERS => MXIO_ROW(to_unsigned(0, codeword(0)'length)));
+                index    := 0;
                 ready <= '0';
                 stat  <= R1;
             ELSE
@@ -78,6 +81,8 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
+                        REPORT LF & "[ENC] message" & LF & MXIO_toString(msg);
+                        REPORT LF & "[ENC] codeword" & LF & MXIO_toString(codeword);
                     WHEN OTHERS =>
                 END CASE;
             END IF;

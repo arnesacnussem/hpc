@@ -5,19 +5,43 @@ USE ieee.math_real.ALL;
 USE work.types.ALL;
 
 PACKAGE utils IS
-    FUNCTION bVecToString (row  : bit_vector) RETURN STRING;
+    FUNCTION bitToChar(b            : BIT) RETURN CHARACTER;
+    FUNCTION MXIOROW_toString (bVec : MXIO_ROW) RETURN STRING;
+    FUNCTION MXIO_toString (mx      : MXIO) RETURN STRING;
 END PACKAGE;
 
 PACKAGE BODY utils IS
-    FUNCTION bVecToString (row : bit_vector) RETURN STRING IS
-        VARIABLE li                : STRING(0 TO row'length);
+
+    FUNCTION bitToChar(b : BIT) RETURN CHARACTER IS
     BEGIN
-        FOR i IN row'RANGE LOOP
-            IF row(i) = '1' THEN
-                li(i) := '1';
-            ELSE
-                li(i) := '0';
-            END IF;
+        IF b = '1' THEN
+            RETURN '1';
+        ELSE
+            RETURN '0';
+        END IF;
+    END FUNCTION;
+
+    FUNCTION MXIOROW_toString (bVec : MXIO_ROW) RETURN STRING IS
+        VARIABLE li                     : STRING(0 TO bVec'length * 2);
+    BEGIN
+        FOR i IN bVec'RANGE LOOP
+            li(i * 2 TO i * 2 + 1) := bitToChar(bVec(i)) & ' ';
+        END LOOP;
+        RETURN li;
+    END FUNCTION;
+
+    FUNCTION MXIO_toString (mx : MXIO) RETURN STRING IS
+        -- length: col*row + row*8 +2
+        -- line length: col + 8 => 3 line num, 1 LF
+        VARIABLE li : STRING(0 TO (mx'length * (mx(0)'length * 2 + 2))) := (OTHERS => NUL);
+
+        -- LF is 2 char =_=
+        CONSTANT len   : NATURAL := mx(0)'length * 2 + 2;
+        VARIABLE index : NATURAL := 0;
+    BEGIN
+        FOR row IN mx'RANGE LOOP
+            li(row * len TO (row + 1) * len - 1) := MXIOROW_toString(mx(row)) & LF;
+            index                                := index + len + 1;
         END LOOP;
         RETURN li;
     END FUNCTION;
