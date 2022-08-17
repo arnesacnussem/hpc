@@ -150,6 +150,7 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
+                        REPORT LF & "[DEC] code=" & MXIO_toString(code);
                         REPORT LF & "[DEC] msg=" & MXIO_toString(msg);
                     WHEN OTHERS =>
                 END CASE;

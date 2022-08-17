@@ -27,7 +27,7 @@ def ghdl = [
         exec: 'ghdl',
         workDir: buildDir,
         args: ['--std=08', '-fcolor-diagnostics'],
-        topLevel: 'encoder_mxio_tb'
+        topLevel: 'decoder_tb'
 ]
 
 task compileScripts(type: YarnTask) {

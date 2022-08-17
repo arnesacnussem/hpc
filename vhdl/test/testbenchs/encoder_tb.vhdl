@@ -32,7 +32,6 @@ BEGIN
         );
 
     PROCESS
-
     BEGIN
         clk <= NOT clk;
         WAIT FOR 1 ps;
