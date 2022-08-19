@@ -16,7 +16,7 @@ ENTITY decoder IS
 END ENTITY decoder;
 
 ARCHITECTURE decoder OF decoder IS
-    TYPE state_t IS (R0, R1, R2, R3, RDY);
+    TYPE state_t IS (R0, R1, R2, R3, R4, RDY);
     SIGNAL stat : state_t := R0;
     PROCEDURE find (
         VARIABLE val : IN INTEGER;
@@ -41,15 +41,16 @@ ARCHITECTURE decoder OF decoder IS
         VARIABLE pos      : INTEGER := (-1);
     BEGIN
         syndrome := (OTHERS => '0');
-        FOR row IN syndrome'RANGE LOOP
-            FOR col IN lin'RANGE LOOP
+        FOR col IN lin'RANGE LOOP
+            FOR row IN syndrome'RANGE LOOP
                 syndrome(row) := (lin(col) AND CHECK_MATRIX(col, row)) XOR syndrome(row);
             END LOOP;
         END LOOP;
 
         dsyn      := to_integer(unsigned(to_stdlogicvector(syndrome)));
-        err_exist := dsyn = 0;
+        err_exist := dsyn /= 0;
         IF err_exist THEN
+            REPORT "syndrome: " & MXIOROW_toString(MXIO_ROW(syndrome)) & " line: " & MXIOROW_toString(lin);
             find(val => dsyn, pos => err_pos);
         END IF;
     END PROCEDURE;
@@ -64,6 +65,7 @@ BEGIN
         VARIABLE row_vec : CODEWORD_LINE;
 
         VARIABLE code_tmp : CODEWORD_MAT;
+        VARIABLE message  : MSG_MAT;
         -- FIXME: 这个提取行好像搞得太复杂了
         VARIABLE column_temp : CODEWORD_LINE;
 
@@ -87,13 +89,11 @@ BEGIN
                             IF err_pos >= 0 THEN
                                 code_tmp(index)(err_pos) := NOT code_tmp(index)(err_pos);
                             END IF;
-                        ELSE
-                            REPORT "[DEC(1/3)]: row=" & INTEGER'image(index) & " No error found";
                         END IF;
 
                         index := index + 1;
                         IF index = CODEWORD_MAT'length THEN
-                            REPORT "[DEC] round 1/3";
+                            REPORT "[DEC/R1] round 1/3";
                             index := 0;
                             stat <= R2;
                         END IF;
@@ -101,12 +101,12 @@ BEGIN
                     WHEN R2 =>
                         -- 列转行
                         FOR row IN CODEWORD_LINE'RANGE LOOP
-                            column_temp(index) := code_tmp(row)(index);
-                            line_decode(column_temp, err_exist, err_pos);
+                            column_temp(row) := code_tmp(row)(index);
                         END LOOP;
+                        line_decode(column_temp, err_exist, err_pos);
 
                         IF err_exist THEN
-                            REPORT "[DEC(1/3)]: col=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
+                            REPORT "[DEC(2/3)]: col=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
                             IF err_pos >= 0 THEN
                                 code_tmp(err_pos)(index) := NOT code_tmp(err_pos)(index);
                                 IF row_vec(err_pos) = '0' THEN
@@ -115,13 +115,11 @@ BEGIN
                             ELSE
                                 col_vec(index) := '1';
                             END IF;
-                        ELSE
-                            REPORT "[DEC(1/3)]: col=" & INTEGER'image(index) & " No error found";
                         END IF;
 
                         index := index + 1;
                         IF index = CODEWORD_LINE'length THEN
-                            REPORT "[DEC] round 2/3";
+                            REPORT "[DEC/R2] round 2/3";
                             index := 0;
                             stat <= R3;
                         END IF;
@@ -141,18 +139,27 @@ BEGIN
 
                         index := index + 1;
                         IF index = CODEWORD_LINE'length THEN
-                            REPORT "[DEC] round 3/3";
+                            REPORT "[DEC/R3] round 3/3";
                             index := 0;
-                            -- FIXME: 这地方估计写的不太对，code_tmp要转置一下好像才行
-                            FOR i IN msg'RANGE LOOP
-                                msg(i) <= code_tmp(i)(CHECK_LENGTH + 1 TO code_tmp(i)'length - 1);
-                            END LOOP;
+                            stat <= R4;
+                        END IF;
+                    WHEN R4 =>
+                        FOR col IN MSG_LINE'RANGE LOOP
+                            message(MSG_MAT'length - index - 1)(MSG_LINE'length - col - 1) := code_tmp(CODEWORD_LINE'length - col - 1)(CODEWORD_MAT'length - index - 1);
+                        END LOOP;
+
+                        index := index + 1;
+                        IF index = msg'length THEN
+                            REPORT "[DEC/R4] message extracted";
+                            index := 0;
                             stat <= RDY;
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
-                        REPORT LF & "[DEC] code=" & MXIO_toString(code);
-                        REPORT LF & "[DEC] msg=" & MXIO_toString(msg);
+                        msg   <= message;
+                        REPORT LF & "[DEC] code=" & LF & MXIO_toString(code);
+                        REPORT LF & "[DEC] corr=" & LF & MXIO_toString(code_tmp);
+                        REPORT LF & "[DEC] msg=" & LF & MXIO_toString(message);
                     WHEN OTHERS =>
                 END CASE;
             END IF;
