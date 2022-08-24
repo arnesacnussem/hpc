@@ -9,6 +9,7 @@ Hamming Product Code on FPGA
 2. NodeJS
 3. Yarn
 4. GNU Octave
+5. GHDL
 
 # Generate code
 ```
