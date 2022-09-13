@@ -16,3 +16,4 @@ build
 *.log
 q2prj
 vhdl/gen/
+tester/__pycache__

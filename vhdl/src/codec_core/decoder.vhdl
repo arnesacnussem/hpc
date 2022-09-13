@@ -7,11 +7,12 @@ USE work.utils.ALL;
 
 ENTITY decoder IS
     PORT (
-        code  : IN CODEWORD_MAT;      -- codeword matrix
-        msg   : OUT MSG_MAT;          -- message matrix
-        ready : OUT STD_LOGIC := '0'; -- signal of work ready
-        rst   : IN STD_LOGIC;         -- reset ready status and clock of work
-        clk   : IN STD_LOGIC          -- clock
+        code     : IN CODEWORD_MAT;      -- codeword matrix
+        msg      : OUT MSG_MAT;          -- message matrix
+        ready    : OUT STD_LOGIC := '0'; -- signal of work ready
+        rst      : IN STD_LOGIC;         -- reset ready status and clock of work
+        clk      : IN STD_LOGIC;         -- clock
+        has_err  : OUT STD_LOGIC
     );
 END ENTITY decoder;
 
@@ -85,6 +86,7 @@ BEGIN
                         line_decode(code_tmp(index), err_exist, err_pos);
                         IF err_exist THEN
                             REPORT "[DEC(1/3)]: row=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
+                            has_err <= '1';
                             row_vec(index) := '1';
                             IF err_pos >= 0 THEN
                                 code_tmp(index)(err_pos) := NOT code_tmp(index)(err_pos);
@@ -107,6 +109,7 @@ BEGIN
 
                         IF err_exist THEN
                             REPORT "[DEC(2/3)]: col=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
+                            has_err <= '1';
                             IF err_pos >= 0 THEN
                                 code_tmp(err_pos)(index) := NOT code_tmp(err_pos)(index);
                                 IF row_vec(err_pos) = '0' THEN
@@ -126,6 +129,7 @@ BEGIN
                     WHEN R3 =>
                         line_decode(code_tmp(index), err_exist, err_pos);
                         IF err_exist THEN
+                            has_err <= '1';
                             IF err_pos >= 0 THEN
                                 code_tmp(index)(err_pos) := NOT code_tmp(index)(err_pos);
                             ELSE
