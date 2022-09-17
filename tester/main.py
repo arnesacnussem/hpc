@@ -1,131 +1,159 @@
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, ALL_COMPLETED
-from prometheus_client import CollectorRegistry, Gauge, push_to_gateway, Summary, Counter
+from concurrent.futures import ProcessPoolExecutor
+import json
+from typing import List
+
+from prometheus_client import CollectorRegistry, Gauge, push_to_gateway, Counter
 from itertools import combinations
 import multiprocessing
-from multiprocessing.dummy import Process
-from typing import List
 import time
 import oct2py
 import os
 import numpy as np
 from os.path import exists
-from datetime import datetime, date
-import scipy
+from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-PROGRESS_FILE = f"{SCRIPT_DIR}/progress.txt"
+PROGRESS_FILE = f"{SCRIPT_DIR}/progress.json"
 
-octave_global = oct2py.Oct2Py()
-octave_global.addpath(SCRIPT_DIR)
-[code, H, table] = octave_global.prepare(3, nout=3)
-size = np.size(code)
-shape = np.shape(code)
-codeSerial = np.reshape(code, -1)
 
-def prep():
+def prep(code, H, table):
     global octave_thread
+    global arg_tuple
+
+    arg_tuple = (code, H, table)
     octave_thread = oct2py.Oct2Py()
     octave_thread.addpath(SCRIPT_DIR)
     octave_thread.eval("pkg load communications;")
 
-def run_test(err_bits: tuple):
+
+def run_test_batch(batch: List[tuple]):
     global octave_thread
+    global arg_tuple
 
-    code_in = np.copy(codeSerial)
-    for pos in err_bits:
-        code_in[pos] = 1 - codeSerial[pos]
+    func_ptr = octave_thread.get_pointer('baoV3')
+    isEquals, err_amounts = octave_thread.batch_tester(batch, func_ptr, arg_tuple[0], arg_tuple[1], arg_tuple[2],
+                                                         nout=2)
 
-    cw = octave_thread.baoV3(H, np.reshape(code_in, shape), table, nout=1)
-    code_out = np.reshape(cw, -1)
-
-    for pos in err_bits:
-        if codeSerial[pos] != code_out[pos]:
-            return False, len(err_bits)
-
-    return True, len(err_bits)
+    # why return nested array?
+    return isEquals[0], err_amounts[0]
 
 
-def write_progress(_err_amount, _progress):
-    progF = open(PROGRESS_FILE, "w")
-    progF.write(f"{_err_amount},{_progress}")
+progress = {
+    'errors': 1,
+    'executed': 0,
+    'batch_id': 0,
+    'skip': 0,
+    'jobName': str(datetime.now()),
+    'success': [],
+    'total': [],
+}
 
 
-if __name__ == '__main__':
+def save_progress():
+    f = open(PROGRESS_FILE, "w")
+    f.write(json.dumps(progress))
+    f.close()
+
+
+def load_progress():
+    global progress
+    if exists(PROGRESS_FILE):
+        f = open(PROGRESS_FILE, 'r')
+        progress = json.loads(f.read())
+        return True
+    return False
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+def main():
     global comb
     cpu_count = multiprocessing.cpu_count()
-    worker_amount = cpu_count if cpu_count < 3 else cpu_count - 1
+    worker_amount = cpu_count
     print(
         f"Using {worker_amount} of {multiprocessing.cpu_count()} cpu for processing pool.")
-    executor = ProcessPoolExecutor(max_workers=worker_amount, initializer=prep)
+
+    octave = oct2py.Oct2Py()
+    octave.addpath(SCRIPT_DIR)
+    [code, h_mat, table] = octave.prepare(3, nout=3)
+    size = np.size(code)
+    executor = ProcessPoolExecutor(max_workers=worker_amount, initializer=prep, initargs=(code, h_mat, table))
 
     registry = CollectorRegistry()
-    pcs = Counter('correct_success',
-                  'Successfully corrected some error',
-                  ['err_bit_amount'], registry=registry)
-    pjc = Counter('job_executed', "Total job finished", registry=registry)
-    pbg = Gauge('batch_gen', 'Batch generate time', registry=registry)
-    pbe = Gauge('batch_exec', 'Batch finish time', registry=registry)
-    jobName = str(datetime.now())
+    correct_success = Counter('correct_success',
+                              'Successfully corrected some error',
+                              ['errors'], registry=registry)
+    job_executed = Counter('job_executed', "Total job finished", registry=registry)
+    batch_gen_gauge = Gauge('batch_gen', 'Batch generate time', registry=registry)
+    batch_exec_gauge = Gauge('batch_exec', 'Batch finish time', registry=registry)
 
     batch = []
-    batch_id = 0
-    err_bit_amount = 1
-    batch_size = 500
+    batch_size = 1000
+    batch_id = 1
+    errors = 1
 
-    skip = 0
-    if exists(PROGRESS_FILE):
-        pFile = open(PROGRESS_FILE, "r")
-        pContent = pFile.read().split(',')
-        if len(pContent) == 2:
-            print(
-                f"Found previous progress: err_bit={pContent[0]}, progress={pContent[1]}")
-            skip = int(pContent[1])
-            err_bit_amount = int(pContent[0])
-
-    comb = combinations(range(size), err_bit_amount)
-    for i in range(skip):
-        _n = next(comb, None)
-        if _n is None:
-            err_bit_amount += 1
-            comb = combinations(range(size), err_bit_amount)
+    _range = range(1, size + 1)  # matlab array index start at 1
+    comb = combinations(_range, errors)
+    # TODO: LOAD PROGRESS
 
     while True:
-        endOfCombinations = False
+        end_of_combinations = False
         start_ns = time.time_ns()
 
-        while len(batch) < batch_size:
+        while len(batch) < batch_size * worker_amount:
             n = next(comb, None)
             if n is None:
-                if err_bit_amount == size:
-                    endOfCombinations = True
+                if errors == size:
+                    end_of_combinations = True
                     break
                 else:
-                    err_bit_amount += 1
-                    comb = combinations(range(size), err_bit_amount)
+                    errors += 1
+                    comb = combinations(_range, errors)
                     continue
             else:
-                batch.append(n)
-        batch_gen = (time.time_ns() - start_ns)*1e-6
-        pbg.set(batch_gen)
+                batch.append(np.array(n))
+        batch_gen = (time.time_ns() - start_ns) * 1e-6
+        batch_gen_gauge.set(batch_gen)
         print(
-            f'generated batch {batch_id} in {batch_gen} ms')
+            f"generated batch {batch_id} in {batch_gen} ms")
 
+        for isEquals, err_amounts in executor.map(run_test_batch, chunks(batch, batch_size)):
+            b_size = len(isEquals)
+            job_executed.inc(b_size)
+            cs_tmp = {}
+            for i in range(len(isEquals)):
+                if isEquals[i] == 1:
+                    err_am = int(err_amounts[i])
+                    if err_am in cs_tmp:
+                        cs_tmp[err_am] += 1
+                    else:
+                        cs_tmp[err_am] = 1
 
-        for success, err_am in executor.map(run_test, batch):
-            pjc.inc()
-            if success:
-                pcs.labels(err_am).inc()
+            for cs in cs_tmp:
+                correct_success.labels(cs).inc(cs_tmp[cs])
 
-        batch_exec = (time.time_ns() - start_ns)*1e-6
+        batch_exec = (time.time_ns() - start_ns) * 1e-6
         print(
-            f'batch {batch_id} done in {batch_exec} ms')
+            f"batch {batch_id} done in {batch_exec} ms")
 
-        pbe.set(batch_exec)
-        push_to_gateway('localhost:9091', job=jobName, registry=registry)
-        if endOfCombinations:
+        batch_exec_gauge.set(batch_exec)
+        push_to_gateway('localhost:9091', job=progress['jobName'], registry=registry)
+        if end_of_combinations:
             break
 
         batch_id += 1
         batch.clear()
 
     print("All Finished!")
+
+
+if __name__ == '__main__':
+    global comb
+    try:
+        main()
+    except KeyboardInterrupt:
+        save_progress()

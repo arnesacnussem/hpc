@@ -1,4 +1,4 @@
-function [optput] = baoV3(H, rec, table)
+function [optput] = baoV3(rec, H, table)
     [r, c] = size(rec);
     row_vector = zeros(1, c);
     col_vector = zeros(1, r);
