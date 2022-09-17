@@ -402,7 +402,9 @@
         "id": 4,
         "options": {
           "legend": {
-            "calcs": [],
+            "calcs": [
+              "max"
+            ],
             "displayMode": "list",
             "placement": "bottom",
             "showLegend": true
@@ -468,6 +470,6 @@
     "timezone": "",
     "title": "New dashboard",
     "uid": "vchoZyMVz",
-    "version": 5,
+    "version": 1,
     "weekStart": ""
   }

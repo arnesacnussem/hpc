@@ -1,7 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor
 import json
 from typing import List
-
+from threading import Thread
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway, Counter
 from itertools import combinations
 import multiprocessing
@@ -32,7 +32,7 @@ def run_test_batch(batch: List[tuple]):
 
     func_ptr = octave_thread.get_pointer('baoV3')
     isEquals, err_amounts = octave_thread.batch_tester(batch, func_ptr, arg_tuple[0], arg_tuple[1], arg_tuple[2],
-                                                         nout=2)
+                                                       nout=2)
 
     # why return nested array?
     return isEquals[0], err_amounts[0]
@@ -98,7 +98,16 @@ def main():
 
     _range = range(1, size + 1)  # matlab array index start at 1
     comb = combinations(_range, errors)
+
     # TODO: LOAD PROGRESS
+
+    def push_metric():
+        while True:
+            push_to_gateway('localhost:9091', job=progress['jobName'], registry=registry)
+            time.sleep(1)
+
+    report_thread = Thread(target=push_metric)
+    report_thread.start()
 
     while True:
         end_of_combinations = False
@@ -141,7 +150,6 @@ def main():
             f"batch {batch_id} done in {batch_exec} ms")
 
         batch_exec_gauge.set(batch_exec)
-        push_to_gateway('localhost:9091', job=progress['jobName'], registry=registry)
         if end_of_combinations:
             break
 
