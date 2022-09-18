@@ -1,12 +1,15 @@
-function [isEquals, err_amounts] = batch_tester(batch, func, codeMat, H, table)
+function [succeed] = batch_tester(batch, func, codeMat, H, table)
+    succeed = 0;
 
     for i = 1:length(batch)
         errs = cell2mat(batch(i));
         modify = modifyCode(codeMat, errs);
         cwOut = func(modify, H, table);
 
-        isEquals(i) = isequal(codeMat, cwOut);
-        err_amounts(i) = length(errs);
+        if isequal(codeMat, cwOut)
+            succeed = succeed + 1;
+        end
+
     end
 
 end

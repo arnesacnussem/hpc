@@ -1,167 +1,130 @@
-from concurrent.futures import ProcessPoolExecutor
-import json
-from typing import List
-from threading import Thread
-from prometheus_client import CollectorRegistry, Gauge, push_to_gateway, Counter
-from itertools import combinations
 import multiprocessing
-import time
-import oct2py
 import os
+import time
+from concurrent.futures import ProcessPoolExecutor
+from itertools import combinations
+from threading import Thread
+from typing import List
+
 import numpy as np
-from os.path import exists
-from datetime import datetime
+import oct2py
+from numpy import ndarray
+from prometheus_client import CollectorRegistry, Gauge, Counter, push_to_gateway
+
+import process
+from Progress import Progress
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-PROGRESS_FILE = f"{SCRIPT_DIR}/progress.json"
+
+registry = CollectorRegistry()
+job_executed = Counter('job_executed', "Total job finished",
+                       registry=registry, namespace='hpc')
+job_succeed = Counter('correct_success', 'Successfully corrected some error', ['errors'], registry=registry,
+                      namespace='hpc')
+batch_gen = Gauge('batch_gen', 'Batch generate time',
+                  registry=registry, namespace='hpc')
+batch_exec = Gauge('batch_exec', 'Batch finish time',
+                   registry=registry, namespace='hpc')
 
 
-def prep(code, H, table):
-    global octave_thread
-    global arg_tuple
+class Main:
+    __PROGRESS_FILE = f"{SCRIPT_DIR}/progress.json"
 
-    arg_tuple = (code, H, table)
-    octave_thread = oct2py.Oct2Py()
-    octave_thread.addpath(SCRIPT_DIR)
-    octave_thread.eval("pkg load communications;")
+    def __init__(self, batch_size=1000):
+        self.batchSize = batch_size
+        cpu_count = multiprocessing.cpu_count()
+        print(
+            f"Using {cpu_count} CPU for process pool worker.")
 
+        octave = oct2py.Oct2Py()
+        octave.addpath(SCRIPT_DIR)
+        [code, h_mat, table] = octave.prepare(3, nout=3)
+        self.size = np.size(code)
+        self._range = range(1, self.size + 1)
+        self.executor = ProcessPoolExecutor(max_workers=cpu_count, initializer=process.prep,
+                                            initargs=(code, h_mat, table))
 
-def run_test_batch(batch: List[tuple]):
-    global octave_thread
-    global arg_tuple
+        self.batchID = 0
+        self.__restore_progress()
+        self._last_time = time.time_ns()
+        self.workers = cpu_count
+        self.__metric_thread()
+        self.main_thread()
 
-    func_ptr = octave_thread.get_pointer('baoV3')
-    isEquals, err_amounts = octave_thread.batch_tester(batch, func_ptr, arg_tuple[0], arg_tuple[1], arg_tuple[2],
-                                                       nout=2)
-
-    # why return nested array?
-    return isEquals[0], err_amounts[0]
-
-
-progress = {
-    'errors': 1,
-    'executed': 0,
-    'batch_id': 0,
-    'skip': 0,
-    'jobName': str(datetime.now()),
-    'success': [],
-    'total': [],
-}
-
-
-def save_progress():
-    f = open(PROGRESS_FILE, "w")
-    f.write(json.dumps(progress))
-    f.close()
-
-
-def load_progress():
-    global progress
-    if exists(PROGRESS_FILE):
-        f = open(PROGRESS_FILE, 'r')
-        progress = json.loads(f.read())
-        return True
-    return False
-
-
-def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
-
-def main():
-    global comb
-    cpu_count = multiprocessing.cpu_count()
-    worker_amount = cpu_count
-    print(
-        f"Using {worker_amount} of {multiprocessing.cpu_count()} cpu for processing pool.")
-
-    octave = oct2py.Oct2Py()
-    octave.addpath(SCRIPT_DIR)
-    [code, h_mat, table] = octave.prepare(3, nout=3)
-    size = np.size(code)
-    executor = ProcessPoolExecutor(max_workers=worker_amount, initializer=prep, initargs=(code, h_mat, table))
-
-    registry = CollectorRegistry()
-    correct_success = Counter('correct_success',
-                              'Successfully corrected some error',
-                              ['errors'], registry=registry)
-    job_executed = Counter('job_executed', "Total job finished", registry=registry)
-    batch_gen_gauge = Gauge('batch_gen', 'Batch generate time', registry=registry)
-    batch_exec_gauge = Gauge('batch_exec', 'Batch finish time', registry=registry)
-
-    batch = []
-    batch_size = 1000
-    batch_id = 1
-    errors = 1
-
-    _range = range(1, size + 1)  # matlab array index start at 1
-    comb = combinations(_range, errors)
-
-    # TODO: LOAD PROGRESS
-
-    def push_metric():
+    def main_thread(self):
         while True:
-            push_to_gateway('localhost:9091', job=progress['jobName'], registry=registry)
-            time.sleep(1)
+            batches = []
+            end_of_work = False
+            for i in range(self.workers):
+                b, batch_id, end_of_work = self.__get_batch()
+                batches.append((b, batch_id))
 
-    report_thread = Thread(target=push_metric)
-    report_thread.start()
+            for succeed, exec_time, amount, errors, batch_id in self.executor.map(process.run_test_batch, batches):
+                print(f"batch={batch_id} time={exec_time}")
+                batch_exec.set(exec_time)
+                job_executed.inc(amount)
+                if errors == self.progress.errors:
+                    self.progress.executed += amount
 
-    while True:
-        end_of_combinations = False
-        start_ns = time.time_ns()
+                if errors > self.progress.errors:
+                    self.progress.executed = amount
+                    self.progress.errors = errors
 
-        while len(batch) < batch_size * worker_amount:
-            n = next(comb, None)
-            if n is None:
-                if errors == size:
-                    end_of_combinations = True
-                    break
+                if errors in self.progress.success:
+                    self.progress.success[errors] += succeed
                 else:
-                    errors += 1
-                    comb = combinations(_range, errors)
-                    continue
+                    self.progress.success[errors] = succeed
+
+            self.progress.save()
+            if end_of_work:
+                print("No more work to do, waiting for executor shutdown...")
+                self.executor.shutdown(True, cancel_futures=False)
+
+    @batch_gen.time()
+    def __get_batch(self) -> tuple[List[ndarray], int, bool]:
+        self.batchID += 1
+        batch_tmp = []
+        for i in range(self.batchSize):
+            n = next(self.comb, None)
+            if n is None:
+                if self.errors == self.size:
+                    return batch_tmp, self.batchID, True
+                else:
+                    self.errors += 1
+                    self.comb = combinations(self._range, self.errors)
+                    return batch_tmp, self.batchID, False
             else:
-                batch.append(np.array(n))
-        batch_gen = (time.time_ns() - start_ns) * 1e-6
-        batch_gen_gauge.set(batch_gen)
-        print(
-            f"generated batch {batch_id} in {batch_gen} ms")
+                batch_tmp.append(np.array(n))
+        return batch_tmp, self.batchID, False
 
-        for isEquals, err_amounts in executor.map(run_test_batch, chunks(batch, batch_size)):
-            b_size = len(isEquals)
-            job_executed.inc(b_size)
-            cs_tmp = {}
-            for i in range(len(isEquals)):
-                if isEquals[i] == 1:
-                    err_am = int(err_amounts[i])
-                    if err_am in cs_tmp:
-                        cs_tmp[err_am] += 1
-                    else:
-                        cs_tmp[err_am] = 1
+    def __metric_thread(self):
+        def thread():
+            while True:
+                push_to_gateway('localhost:9091',
+                                job=self.progress.name, registry=registry)
+                time.sleep(2)
 
-            for cs in cs_tmp:
-                correct_success.labels(cs).inc(cs_tmp[cs])
+        Thread(target=thread, name='metric_thread').start()
 
-        batch_exec = (time.time_ns() - start_ns) * 1e-6
-        print(
-            f"batch {batch_id} done in {batch_exec} ms")
+    def __restore_progress(self):
+        self.progress = Progress(self.__PROGRESS_FILE)
+        if not self.progress.is_new():
+            print("Found previous progress, restore...")
+            self.errors = self.progress.errors
+            self.executed = self.progress.executed
+            self.comb = combinations(self._range, self.errors)
+            self.batchID = self.progress.batch_id
 
-        batch_exec_gauge.set(batch_exec)
-        if end_of_combinations:
-            break
-
-        batch_id += 1
-        batch.clear()
-
-    print("All Finished!")
+            load_time = time.time_ns()
+            for i in range(self.executed):
+                next(self.comb)
+            load_time = int((time.time_ns() - load_time) * 1e-6)
+            print(
+                f"Loaded previous progress in {load_time}ms: err={self.errors}, skipped={self.executed}")
+        else:
+            self.errors = 1
+            self.comb = combinations(self._range, self.errors)
 
 
 if __name__ == '__main__':
-    global comb
-    try:
-        main()
-    except KeyboardInterrupt:
-        save_progress()
+    Main()
