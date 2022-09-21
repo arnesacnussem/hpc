@@ -1,4 +1,4 @@
-function [code, H, table] = prepare(check_bit)
+function [code, H, table, syndt] = prepare(check_bit)
     pkg load communications;
 
     % 生成HGNK
@@ -17,6 +17,7 @@ function [code, H, table] = prepare(check_bit)
     % 原始码字
     code = rem(code_1' * G, 2);
     table = create_table(H);
+    syndt = syndtable(H);
 end
 
 function [Output] = Binary_generate(n)

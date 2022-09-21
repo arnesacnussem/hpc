@@ -38,11 +38,13 @@ class Main:
 
         octave = oct2py.Oct2Py()
         octave.addpath(SCRIPT_DIR)
-        [code, h_mat, table] = octave.prepare(3, nout=3)
-        self.size = np.size(code)
+        # args_tuple = (code, H, table, syndt)
+        args_tuple = octave.prepare(3, nout=4)
+        self.size = np.size(args_tuple[0])
         self._range = range(1, self.size + 1)
-        self.executor = ProcessPoolExecutor(max_workers=cpu_count, initializer=process.prep,
-                                            initargs=(code, h_mat, table))
+        self.executor = ProcessPoolExecutor(max_workers=cpu_count, 
+                                            initializer=process.prep,
+                                            initargs=(args_tuple, 'Proposed_method2'))
 
         self.batchID = 0
         self.__restore_progress()
@@ -63,6 +65,7 @@ class Main:
                 print(f"batch={batch_id} time={exec_time}")
                 batch_exec.set(exec_time)
                 job_executed.inc(amount)
+                job_succeed.labels(errors).inc(succeed)
                 if errors == self.progress.errors:
                     self.progress.executed += amount
 
@@ -113,7 +116,6 @@ class Main:
             self.errors = self.progress.errors
             self.executed = self.progress.executed
             self.comb = combinations(self._range, self.errors)
-            self.batchID = self.progress.batch_id
 
             load_time = time.time_ns()
             for i in range(self.executed):

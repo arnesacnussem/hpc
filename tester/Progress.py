@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+import time
 from os.path import exists
 
 
@@ -9,10 +9,9 @@ class Progress:
         self._file = file
         # error amount to generate
         self.errors = 1
-        self.batch_id = 1
         # already executed in this errors amount
         self.executed: int = 0
-        self.name = str(datetime.now())
+        self.name = str(int(time.time()))
         self.success: dict[int, int] = {}
         self._new = True
         self.load()
@@ -22,6 +21,10 @@ class Progress:
             f_content = open(self._file, 'r').read()
             loaded: dict = json.loads(f_content)
             self.__dict__.update(loaded)
+            t = {}
+            for k in self.success:
+                t[int(k)] = self.success[k]
+            self.success = t
             self._new = False
 
     def save(self):
