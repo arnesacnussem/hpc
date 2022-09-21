@@ -10,8 +10,8 @@
   "forwardPorts": [14500],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postAttachCommand": "sh -c 'xpra start :100 --pulseaudio=no --bind-tcp=0.0.0.0:14500'",
-  "postCreateCommand": "rm ~/.prj_config.teros || ln -s /workspaces/hpc/.prj_config.teros ~/.prj_config.teros && yarn",
+  "postStartCommand": "bash .devcontainer/postStartCommand.sh",
+  "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
 
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode",
