@@ -15,6 +15,15 @@ PACKAGE decoder_utils IS
         VARIABLE err_exist : OUT BOOLEAN;
         VARIABLE err_pos   : OUT INTEGER -- err_pos大于等于0时表示该错误可纠正
     );
+    PROCEDURE syndrome (
+        VARIABLE lin  : IN CODEWORD_LINE;
+        VARIABLE synd : OUT INTEGER
+    );
+    PROCEDURE extract_column (
+        mat   : IN MXIO;
+        index : IN INTEGER;
+        col   : OUT MXIO_ROW
+    );
 END PACKAGE;
 PACKAGE BODY decoder_utils IS
     PROCEDURE find (
@@ -30,27 +39,45 @@ PACKAGE BODY decoder_utils IS
         END LOOP;
     END PROCEDURE;
 
+    PROCEDURE syndrome (
+        VARIABLE lin  : IN CODEWORD_LINE;
+        VARIABLE synd : OUT INTEGER
+    ) IS
+        VARIABLE synd_vec : BIT_VECTOR(0 TO CHECK_LENGTH);
+    BEGIN
+        synd_vec := (OTHERS => '0');
+        FOR col IN lin'RANGE LOOP
+            FOR row IN synd_vec'RANGE LOOP
+                synd_vec(row) := (lin(col) AND CHECK_MATRIX_T(col, row)) XOR synd_vec(row);
+            END LOOP;
+        END LOOP;
+
+        synd := to_integer(unsigned(to_stdlogicvector(synd_vec))); -- binary to decimal
+    END PROCEDURE;
+
     PROCEDURE line_decode (
         VARIABLE lin       : IN CODEWORD_LINE;
         VARIABLE err_exist : OUT BOOLEAN;
         VARIABLE err_pos   : OUT INTEGER -- err_pos大于等于0时表示该错误可纠正
     ) IS
-        VARIABLE syndrome : BIT_VECTOR(0 TO CHECK_LENGTH);
-        VARIABLE dsyn     : INTEGER;
-        VARIABLE pos      : INTEGER := (-1);
+        VARIABLE dsyn : INTEGER;
+        VARIABLE pos  : INTEGER := (-1);
     BEGIN
-        syndrome := (OTHERS => '0');
-        FOR col IN lin'RANGE LOOP
-            FOR row IN syndrome'RANGE LOOP
-                syndrome(row) := (lin(col) AND CHECK_MATRIX_T(col, row)) XOR syndrome(row);
-            END LOOP;
-        END LOOP;
-
-        dsyn      := to_integer(unsigned(to_stdlogicvector(syndrome))); -- binary to decimal
+        syndrome(lin => lin, synd => dsyn);
         err_exist := dsyn /= 0;
         IF err_exist THEN
-            REPORT "syndrome: " & MXIOROW_toString(MXIO_ROW(syndrome)) & " line: " & MXIOROW_toString(lin);
             find(val => dsyn, pos => err_pos);
         END IF;
+    END PROCEDURE;
+    PROCEDURE extract_column (
+        mat   : IN MXIO;
+        index : IN INTEGER;
+        col   : OUT MXIO_ROW
+    ) IS
+    BEGIN
+        -- 列转行
+        FOR row IN mat'RANGE LOOP
+            col(row) := mat(row)(index);
+        END LOOP;
     END PROCEDURE;
 END PACKAGE BODY;

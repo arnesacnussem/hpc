@@ -8,7 +8,7 @@ USE work.decoder_utils.ALL;
 
 ENTITY decoder IS
     PORT (
-        codeIn    : IN CODEWORD_MAT;      -- codeword matrix
+        codeIn  : IN CODEWORD_MAT;      -- codeword matrix
         msg     : OUT MSG_MAT;          -- message matrix
         ready   : OUT STD_LOGIC := '0'; -- signal of work ready
         rst     : IN STD_LOGIC;         -- reset ready status and clock of work
@@ -29,8 +29,8 @@ BEGIN
         VARIABLE col_vec : CODEWORD_LINE;
         VARIABLE row_vec : CODEWORD_LINE;
 
-        VARIABLE code : CODEWORD_MAT;
-        VARIABLE message  : MSG_MAT;
+        VARIABLE code    : CODEWORD_MAT;
+        VARIABLE message : MSG_MAT;
         -- FIXME: 这个提取行好像搞得太复杂了
         VARIABLE column_temp : CODEWORD_LINE;
 
@@ -49,7 +49,7 @@ BEGIN
                     WHEN R1 =>
                         line_decode(code(index), err_exist, err_pos);
                         IF err_exist THEN
-                            REPORT "[DEC(1/3)]: row=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
+                            REPORT "[DEC/BAO3] found error: row=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
                             has_err <= '1';
                             row_vec(index) := '1';
                             IF err_pos >= 0 THEN
@@ -59,20 +59,17 @@ BEGIN
 
                         index := index + 1;
                         IF index = CODEWORD_MAT'length THEN
-                            REPORT "[DEC/R1] round 1/3";
+                            REPORT "[DEC/BAO3] round 1/3";
                             index := 0;
                             stat <= R2;
                         END IF;
 
                     WHEN R2 =>
-                        -- 列转行
-                        FOR row IN CODEWORD_LINE'RANGE LOOP
-                            column_temp(row) := code(row)(index);
-                        END LOOP;
+                        extract_column(mat => code, index => index, col => column_temp);
                         line_decode(column_temp, err_exist, err_pos);
 
                         IF err_exist THEN
-                            REPORT "[DEC(2/3)]: col=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
+                            REPORT "[DEC/BAO3]: col=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
                             has_err <= '1';
                             IF err_pos >= 0 THEN
                                 code(err_pos)(index) := NOT code(err_pos)(index);
@@ -86,7 +83,7 @@ BEGIN
 
                         index := index + 1;
                         IF index = CODEWORD_LINE'length THEN
-                            REPORT "[DEC/R2] round 2/3";
+                            REPORT "[DEC/BAO3] round 2/3";
                             index := 0;
                             stat <= R3;
                         END IF;
@@ -107,7 +104,7 @@ BEGIN
 
                         index := index + 1;
                         IF index = CODEWORD_LINE'length THEN
-                            REPORT "[DEC/R3] round 3/3";
+                            REPORT "[DEC/BAO3] round 3/3";
                             index := 0;
                             stat <= EXTRACT;
                         END IF;
@@ -118,16 +115,16 @@ BEGIN
 
                         index := index + 1;
                         IF index = msg'length THEN
-                            REPORT "[DEC/EXTRACT] message extracted";
+                            REPORT "[DEC/BAO3] message extracted";
                             index := 0;
                             stat <= RDY;
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
                         msg   <= message;
-                        REPORT LF & "[DEC] codeIn=" & LF & MXIO_toString(codeIn);
-                        REPORT LF & "[DEC] corr=" & LF & MXIO_toString(code);
-                        REPORT LF & "[DEC] msg=" & LF & MXIO_toString(message);
+                        REPORT LF & "[DEC/BAO3] codeIn=" & LF & MXIO_toString(codeIn);
+                        REPORT LF & "[DEC/BAO3] corr=" & LF & MXIO_toString(code);
+                        REPORT LF & "[DEC/BAO3] msg=" & LF & MXIO_toString(message);
                     WHEN OTHERS =>
                 END CASE;
             END IF;
