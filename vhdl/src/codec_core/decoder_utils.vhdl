@@ -42,7 +42,7 @@ PACKAGE BODY decoder_utils IS
         syndrome := (OTHERS => '0');
         FOR col IN lin'RANGE LOOP
             FOR row IN syndrome'RANGE LOOP
-                syndrome(row) := (lin(col) AND CHECK_MATRIX(col, row)) XOR syndrome(row);
+                syndrome(row) := (lin(col) AND CHECK_MATRIX_T(col, row)) XOR syndrome(row);
             END LOOP;
         END LOOP;
 

@@ -10,11 +10,11 @@ function gen(check_bits)
     end
 
     % tag formate: !# type tag #! value
-    printf("!# mat h #! %s\n", mat2str(h'));
+    printf("!# mat ht #! %s\n", mat2str(h'));
     printf("!# mat g #! %s\n", mat2str(g));
     printf("!# val n #! %d\n", n);
     printf("!# val k #! %d\n", k);
-    printf("!# mat table #! %s\n", mat2str(table))
-    printf("!# mat syndt #! %s\n", mat2str(syndtable(h)))
+    printf("!# mat table #! %s\n", mat2str(table));
+    printf("!# mat syndt #! %s\n", mat2str(syndtable(h)));
 
 end

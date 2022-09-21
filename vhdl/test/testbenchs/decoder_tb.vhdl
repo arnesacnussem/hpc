@@ -33,7 +33,7 @@ BEGIN
 
     decoder_inst : ENTITY work.decoder
         PORT MAP(
-            code  => code,
+            codeIn  => code,
             msg   => msg_o,
             ready => ready(1),
             rst   => rst(1),

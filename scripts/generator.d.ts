@@ -1,7 +1,7 @@
 export type exported_data = {
   n: number;
   k: number;
-  h: string[];
+  ht: string[];
   g: string[];
   [keys: string]: string[][] | string[] | number;
 };

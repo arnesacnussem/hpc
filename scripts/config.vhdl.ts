@@ -1,7 +1,7 @@
 import { writeFile, comment } from "./generator_common.js";
 import { exported_data } from "./generator.d.js";
 
-export default ({ h, g, n, k, table, syndt }: exported_data) => {
+export default ({ ht, g, n, k, table, syndt }: exported_data) => {
   const pkgName = "config";
   const tab = table as string[];
   const synd = syndt as string[];
@@ -16,15 +16,15 @@ PACKAGE ${pkgName} IS
     ${comment("CODEWORD_LENGTH(n) = " + k)}
     CONSTANT CODEWORD_LENGTH : INTEGER := ${n - 1};
 
-    ${comment("CHECK_LENGTH = " + h[0].length)}
-    CONSTANT CHECK_LENGTH    : INTEGER := ${h[0].length - 1};
+    ${comment("CHECK_LENGTH = " + ht[0].length)}
+    CONSTANT CHECK_LENGTH    : INTEGER := ${ht[0].length - 1};
     CONSTANT GENERATE_MATRIX : GEN_MAT := (
         ${g
           .map((l, i) => i.toString().concat(' => "').concat(l).concat('"'))
           .join(",\n\t\t")}
     );
-    CONSTANT CHECK_MATRIX : CHK_MAT := (
-        ${h
+    CONSTANT CHECK_MATRIX_T : CHK_MAT := (
+        ${ht
           .map((l, i) => i.toString().concat(' => "').concat(l).concat('"'))
           .join(",\n\t\t")}
     );

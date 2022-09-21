@@ -2,7 +2,7 @@ import { gencfg } from "./generator_cfg.js";
 import { writeFile, comment } from "./generator_common.js";
 import { exported_data } from "./generator.d.js";
 export default (mat: exported_data) => {
-  const { h, n, k, table } = mat;
+  const { ht: h, n, k, table } = mat;
   const pkgName = "types";
   const vhdl = `-- generated from ${process.argv[1]}
 LIBRARY ieee;
