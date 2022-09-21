@@ -1,8 +1,10 @@
 import { writeFile, comment } from "./generator_common.js";
-import { matrix } from "./generator.d.js";
+import { exported_data } from "./generator.d.js";
 
-export default ({ h, g, n, k, table }: matrix) => {
+export default ({ h, g, n, k, table, syndt }: exported_data) => {
   const pkgName = "config";
+  const tab = table as string[];
+  const synd = syndt as string[];
   const vhdl = `-- generated from ${process.argv[1]}
 library ieee;
 USE work.types.ALL;
@@ -28,8 +30,16 @@ PACKAGE ${pkgName} IS
     );
 
     CONSTANT REF_TABLE : REF_TABLE_ARR := (
-        ${(table as unknown as string[]).join(", ")}
+        ${tab.join(", ")}
     );
+
+    CONSTANT SYNDTABLE : MXIO(0 TO ${synd.length - 1})(0 TO ${
+    synd[0].length - 1
+  }) := (
+      ${synd
+        .map((l, i) => i.toString().concat(' => "').concat(l).concat('"'))
+        .join(",\n\t\t")}
+  );
 END PACKAGE ${pkgName};
 `;
   writeFile(pkgName, vhdl);

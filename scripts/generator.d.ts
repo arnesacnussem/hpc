@@ -1,9 +1,9 @@
-export type matrix = {
+export type exported_data = {
   n: number;
   k: number;
   h: string[];
   g: string[];
-  [keys: string]: string[] | number;
+  [keys: string]: string[][] | string[] | number;
 };
 
 export type vhdl = {

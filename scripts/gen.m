@@ -15,5 +15,6 @@ function gen(check_bits)
     printf("!# val n #! %d\n", n);
     printf("!# val k #! %d\n", k);
     printf("!# mat table #! %s\n", mat2str(table))
+    printf("!# mat syndt #! %s\n", mat2str(syndtable(h)))
 
 end

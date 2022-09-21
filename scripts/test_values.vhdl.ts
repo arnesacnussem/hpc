@@ -1,6 +1,6 @@
 import { writeFile, comment } from "./generator_common.js";
-import { matrix } from "./generator.d.js";
-export default ({ h, g, n, k }: matrix) => {
+import { exported_data } from "./generator.d.js";
+export default ({ h, g, n, k }: exported_data) => {
   const msg = Array.from({ length: k }, () =>
     Array.from({ length: k }, () => (Math.random() > 0.5 ? 1 : 0))
   );

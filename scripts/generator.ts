@@ -2,11 +2,11 @@ import { mkdirSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { exec, execSync } from "child_process";
 import { gencfg } from "./generator_cfg.js";
-import { matrix } from "./generator.d.js";
+import { exported_data } from "./generator.d.js";
 const matrixs = ((check_bits) => {
   const octaveCMD = `octave-cli -q -p scripts --eval 'gen(${check_bits})'`;
   const stdout = execSync(octaveCMD).toString();
-  const matrixs = {} as matrix;
+  const matrixs = {} as exported_data;
 
   stdout
     .trim()
