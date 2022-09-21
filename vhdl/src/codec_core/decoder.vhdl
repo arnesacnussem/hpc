@@ -82,6 +82,7 @@ BEGIN
                         END IF;
 
                         index := index + 1;
+                        -- 这玩意是正方形的，所以col和row长度一样...
                         IF index = CODEWORD_LINE'length THEN
                             REPORT "[DEC/BAO3] round 2/3";
                             index := 0;

@@ -53,7 +53,7 @@ BEGIN
 
     decoder_inst : ENTITY work.decoder
         PORT MAP(
-            code  => code_matrix,
+            codeIn  => code_matrix,
             msg   => msg_matrix,
             ready => state(1),
             rst   => rst,
