@@ -1,7 +1,17 @@
 function gen(check_bits)
 
     pkg load communications;
-    [h, g, n, k] = hammgen(check_bits);
+    % 生成HGNK
+    g = hammgen(check_bit);
+    [row, col] = size(g);
+    g = [g, zeros(row, 1); ones(1, col + 1)];
+    g = rem(abs(rref(g)), 2);
+    c = check_bit + 1;
+    k = 2^check_bit - 1 - check_bit;
+    n = 2^check_bit;
+    h = gen2par(g);
+
+    
     [~, col] = size(h);
     table = zeros(col, 1);
 
