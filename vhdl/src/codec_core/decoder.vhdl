@@ -4,58 +4,22 @@ USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.config.ALL;
 USE work.utils.ALL;
+USE work.decoder_utils.ALL;
 
 ENTITY decoder IS
     PORT (
-        code     : IN CODEWORD_MAT;      -- codeword matrix
-        msg      : OUT MSG_MAT;          -- message matrix
-        ready    : OUT STD_LOGIC := '0'; -- signal of work ready
-        rst      : IN STD_LOGIC;         -- reset ready status and clock of work
-        clk      : IN STD_LOGIC;         -- clock
-        has_err  : OUT STD_LOGIC
+        code    : IN CODEWORD_MAT;      -- codeword matrix
+        msg     : OUT MSG_MAT;          -- message matrix
+        ready   : OUT STD_LOGIC := '0'; -- signal of work ready
+        rst     : IN STD_LOGIC;         -- reset ready status and clock of work
+        clk     : IN STD_LOGIC;         -- clock
+        has_err : OUT STD_LOGIC
     );
 END ENTITY decoder;
 
 ARCHITECTURE decoder OF decoder IS
     TYPE state_t IS (R0, R1, R2, R3, R4, RDY);
     SIGNAL stat : state_t := R0;
-    PROCEDURE find (
-        VARIABLE val : IN INTEGER;
-        VARIABLE pos : OUT INTEGER
-    ) IS
-    BEGIN
-        pos := (-1);
-        FOR i IN REF_TABLE'RANGE LOOP
-            IF (REF_TABLE(i) = val) THEN
-                pos := i;
-            END IF;
-        END LOOP;
-    END PROCEDURE;
-
-    PROCEDURE line_decode (
-        VARIABLE lin       : IN CODEWORD_LINE;
-        VARIABLE err_exist : OUT BOOLEAN;
-        VARIABLE err_pos   : OUT INTEGER -- err_pos大于等于0时表示该错误可纠正
-    ) IS
-        VARIABLE syndrome : BIT_VECTOR(0 TO CHECK_LENGTH);
-        VARIABLE dsyn     : INTEGER;
-        VARIABLE pos      : INTEGER := (-1);
-    BEGIN
-        syndrome := (OTHERS => '0');
-        FOR col IN lin'RANGE LOOP
-            FOR row IN syndrome'RANGE LOOP
-                syndrome(row) := (lin(col) AND CHECK_MATRIX(col, row)) XOR syndrome(row);
-            END LOOP;
-        END LOOP;
-
-        dsyn      := to_integer(unsigned(to_stdlogicvector(syndrome)));
-        err_exist := dsyn /= 0;
-        IF err_exist THEN
-            REPORT "syndrome: " & MXIOROW_toString(MXIO_ROW(syndrome)) & " line: " & MXIOROW_toString(lin);
-            find(val => dsyn, pos => err_pos);
-        END IF;
-    END PROCEDURE;
-
 BEGIN
 
     PROCESS (clk)
