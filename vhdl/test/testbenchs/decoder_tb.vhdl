@@ -3,6 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.test_values.ALL;
+USE work.decoder_types.ALL;
 
 ENTITY decoder_tb IS
 END;
@@ -10,16 +11,16 @@ END;
 ARCHITECTURE bench OF decoder_tb IS
 
     -- Ports
-    SIGNAL code  : CODEWORD_MAT;
-    SIGNAL msg   : MSG_MAT := MESSAGE_MATRIX;
-    SIGNAL msg_o : MSG_MAT;
-    SIGNAL ready : STD_LOGIC_VECTOR(0 TO 1);
-    SIGNAL rst   : STD_LOGIC_VECTOR(0 TO 1) := "00";
-    SIGNAL clk_c : STD_LOGIC_VECTOR(0 TO 1) := "00";
-    SIGNAL clk_r : STD_LOGIC_VECTOR(0 TO 1);
-    SIGNAL clk   : STD_LOGIC := '0';
-    SIGNAL exit1 : BOOLEAN   := false;
-
+    SIGNAL code    : CODEWORD_MAT;
+    SIGNAL msg     : MSG_MAT := MESSAGE_MATRIX;
+    SIGNAL msg_o   : MSG_MAT;
+    SIGNAL ready   : STD_LOGIC_VECTOR(0 TO 1);
+    SIGNAL rst     : STD_LOGIC_VECTOR(0 TO 1) := "00";
+    SIGNAL clk_c   : STD_LOGIC_VECTOR(0 TO 1) := "00";
+    SIGNAL clk_r   : STD_LOGIC_VECTOR(0 TO 1);
+    SIGNAL clk     : STD_LOGIC := '0';
+    SIGNAL exit1   : BOOLEAN   := false;
+    SIGNAL has_err : STD_LOGIC;
 BEGIN
 
     encoder_inst : ENTITY work.encoder
@@ -32,14 +33,17 @@ BEGIN
         );
 
     decoder_inst : ENTITY work.decoder
+        GENERIC MAP(
+            decoder_type => PMS2
+        )
         PORT MAP(
             codeIn  => code,
-            msg   => msg_o,
-            ready => ready(1),
-            rst   => rst(1),
-            clk   => clk_r(1)
+            msg     => msg_o,
+            ready   => ready(1),
+            rst     => rst(1),
+            clk     => clk_r(1),
+            has_err => has_err
         );
-
     PROCESS
         VARIABLE clk_real : STD_LOGIC := '0';
     BEGIN

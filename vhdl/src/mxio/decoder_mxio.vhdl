@@ -3,6 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
 USE work.types.ALL;
+USE work.decoder_types.ALL;
 
 ENTITY decoder_mxio IS
     GENERIC (
@@ -10,7 +11,8 @@ ENTITY decoder_mxio IS
         CODE_RATIO : POSITIVE := CODEWORD_SERIAL'length;
         -- [0]: 输入缓存
         -- [1]: 输出填充
-        IO_CONTROL : BIT_VECTOR(0 TO 1) := "10"
+        IO_CONTROL   : BIT_VECTOR(0 TO 1) := "10";
+        DECODER_TYPE : DecoderType        := UNDEFINED
     );
     PORT (
         code  : IN BIT_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
@@ -52,12 +54,15 @@ BEGIN
         );
 
     decoder_inst : ENTITY work.decoder
+        GENERIC MAP(
+            DECODER_TYPE => DECODER_TYPE
+        )
         PORT MAP(
-            codeIn  => code_matrix,
-            msg   => msg_matrix,
-            ready => state(1),
-            rst   => rst,
-            clk   => codec_clk
+            codeIn => code_matrix,
+            msg    => msg_matrix,
+            ready  => state(1),
+            rst    => rst,
+            clk    => codec_clk
         );
     dec_mxio_out : ENTITY work.matrix_io
         GENERIC MAP(

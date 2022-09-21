@@ -3,16 +3,18 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
 USE work.types.ALL;
+USE work.decoder_types.ALL;
 
 ENTITY top_level IS
     GENERIC (
         -- 串行输入输出位宽比例
         -- 将被矩阵总长度整除
         -- 默认：位宽为1
-        SERIAL_MSG_RATIO  : POSITIVE := MSG_SERIAL'length;
-        SERIAL_CODE_RATIO : POSITIVE := CODEWORD_SERIAL'length;
-        IN_BUFFER         : BIT      := '1';
-        OUT_FILL          : BIT      := '0'
+        SERIAL_MSG_RATIO  : POSITIVE    := MSG_SERIAL'length;
+        SERIAL_CODE_RATIO : POSITIVE    := CODEWORD_SERIAL'length;
+        IN_BUFFER         : BIT         := '1';
+        OUT_FILL          : BIT         := '0';
+        DECODER_TYPE      : DecoderType := PMS2
     );
     PORT (
         clk      : IN STD_LOGIC := '0';
@@ -43,9 +45,10 @@ BEGIN
         );
     decoder_mxio_inst : ENTITY work.decoder_mxio
         GENERIC MAP(
-            MSG_RATIO  => SERIAL_MSG_RATIO,
-            CODE_RATIO => SERIAL_CODE_RATIO,
-            IO_CONTROL => IN_BUFFER & OUT_FILL
+            MSG_RATIO    => SERIAL_MSG_RATIO,
+            CODE_RATIO   => SERIAL_CODE_RATIO,
+            IO_CONTROL   => IN_BUFFER & OUT_FILL,
+            DECODER_TYPE => DECODER_TYPE
         )
         PORT MAP(
             code  => code_in,

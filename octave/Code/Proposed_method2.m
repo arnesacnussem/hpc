@@ -33,6 +33,7 @@ function [rec] = Proposed_method2(H, rec)
             for i = 1:length(row_error)
 
                 for j = 1:length(col_error)
+                    % 这是个 bit flip...
                     rec(row_error(i), col_error(j)) = rem(rec(row_error(i), col_error(j)) + 1, 2);
                 end
 
@@ -71,8 +72,8 @@ function [rec] = row_correct(rec, H, T)
 
     for i = 1:r
         S = rem(rec(i, :) * H', 2);
-        index = Bin2int(S);
-        rec(i, :) = rem(rec(i, :) + T(index + 1, :), 2);
+        S = Bin2int(S);
+        rec(i, :) = rem(rec(i, :) + T(S + 1, :), 2);
     end
 
 end
@@ -82,8 +83,8 @@ function [rec] = col_correct(rec, H, T)
 
     for i = 1:c
         S = rem(rec(:, i)' * H', 2);
-        index = Bin2int(S);
-        rec(:, i) = rem(rec(:, i)' + T(index + 1, :), 2)';
+        S = Bin2int(S);
+        rec(:, i) = rem(rec(:, i)' + T(S + 1, :), 2)';
     end
 
 end
