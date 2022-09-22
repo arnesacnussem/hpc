@@ -10,8 +10,8 @@
   "forwardPorts": [14500],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postStartCommand": "bash .devcontainer/postStartCommand.sh",
-  "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
+  "postStartCommand": "bash /postStartCommand.sh",
+  "postCreateCommand": "bash /postCreateCommand.sh",
 
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode",
