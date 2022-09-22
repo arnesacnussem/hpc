@@ -17,7 +17,7 @@ from Progress import Progress
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 registry = CollectorRegistry()
-job_executed = Counter('job_executed', "Total job finished",
+job_executed = Counter('job_executed', "Total job finished",["errors"],
                        registry=registry, namespace='hpc')
 job_succeed = Counter('correct_success', 'Successfully corrected some error', ['errors'], registry=registry,
                       namespace='hpc')
@@ -64,7 +64,8 @@ class Main:
             for succeed, exec_time, amount, errors, batch_id in self.executor.map(process.run_test_batch, batches):
                 print(f"batch={batch_id} time={exec_time}")
                 batch_exec.set(exec_time)
-                job_executed.inc(amount)
+                job_executed.labels(0).inc(amount)
+                job_executed.labels(errors).inc(amount)
                 job_succeed.labels(errors).inc(succeed)
                 if errors == self.progress.errors:
                     self.progress.executed += amount
@@ -124,7 +125,7 @@ class Main:
             print(
                 f"Loaded previous progress in {load_time}ms: err={self.errors}, skipped={self.executed}")
         else:
-            self.errors = 1
+            self.errors = 7
             self.comb = combinations(self._range, self.errors)
 
 

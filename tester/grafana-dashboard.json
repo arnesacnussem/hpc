@@ -134,6 +134,18 @@
           "legendFormat": "{{errors}}",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "builder",
+          "expr": "hpc_job_executed_total{exported_job=\"$job\", errors!=\"0\"}",
+          "hide": false,
+          "legendFormat": "{{errors}}",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Success",
@@ -200,7 +212,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
-          "expr": "hpc_job_executed_total{exported_job=\"$job\"}",
+          "expr": "hpc_job_executed_total{exported_job=\"$job\", errors=\"0\"}",
           "legendFormat": "Total",
           "range": true,
           "refId": "A"
@@ -211,7 +223,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "builder",
-          "expr": "rate(hpc_job_executed_total{exported_job=\"$job\"}[1m])",
+          "expr": "rate(hpc_job_executed_total{exported_job=\"$job\", errors=\"0\"}[1m])",
           "hide": false,
           "legendFormat": "job/s",
           "range": true,
@@ -423,7 +435,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(hpc_job_executed_total{exported_job=\"$job\"}[1m]))",
+          "expr": "sum(rate(hpc_job_executed_total{exported_job=\"$job\",errors=\"0\"}[1m]))",
           "legendFormat": "Job executed pre second",
           "range": true,
           "refId": "A"
@@ -472,6 +484,6 @@
   "timezone": "",
   "title": "New dashboard",
   "uid": "vchoZyMVz",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
