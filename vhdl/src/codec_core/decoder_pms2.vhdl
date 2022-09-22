@@ -28,8 +28,8 @@ BEGIN
     PROCESS (clk)
         VARIABLE code      : CODEWORD_MAT;
         VARIABLE message   : MSG_MAT;
-        VARIABLE index     : NATURAL := 0;
-        VARIABLE r3_stat   : NATURAL := 0;
+        VARIABLE index     : NATURAL   := 0;
+        VARIABLE r3_stat   : NATURAL   := 0;
         VARIABLE r3_type   : r3_type_t := A;
         VARIABLE err_exist : BOOLEAN;
         VARIABLE err_pos   : INTEGER;

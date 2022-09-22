@@ -30,7 +30,7 @@ batch_exec = Gauge('batch_exec', 'Batch finish time',
 class Main:
     __PROGRESS_FILE = f"{SCRIPT_DIR}/progress.json"
 
-    def __init__(self, batch_size=1000):
+    def __init__(self, batch_size:int, chk_type:int, test_method:str):
         self.batchSize = batch_size
         cpu_count = multiprocessing.cpu_count()
         print(
@@ -39,18 +39,20 @@ class Main:
         octave = oct2py.Oct2Py()
         octave.addpath(SCRIPT_DIR)
         # args_tuple = (code, H, table, syndt)
-        args_tuple = octave.prepare(3, nout=4)
+        if chk_type == 73:
+            args_tuple = octave.prepare73(3, nout=4)
+        elif chk_type == 84:
+            args_tuple = octave.prepare84(3, nout=4)
         self.size = np.size(args_tuple[0])
         self._range = range(1, self.size + 1)
         self.executor = ProcessPoolExecutor(max_workers=cpu_count, 
                                             initializer=process.prep,
-                                            initargs=(args_tuple, 'Proposed_method2'))
+                                            initargs=(args_tuple, test_method))
 
         self.batchID = 0
         self.__restore_progress()
         self._last_time = time.time_ns()
         self.workers = cpu_count
-        self.__metric_thread()
         self.main_thread()
 
     def main_thread(self):
@@ -62,7 +64,7 @@ class Main:
                 batches.append((b, batch_id))
 
             for succeed, exec_time, amount, errors, batch_id in self.executor.map(process.run_test_batch, batches):
-                print(f"batch={batch_id} time={exec_time}")
+                print(f"batch={batch_id} time={exec_time} errors={errors} amount={amount} succeed={succeed}")
                 batch_exec.set(exec_time)
                 job_executed.labels(0).inc(amount)
                 job_executed.labels(errors).inc(amount)
@@ -80,6 +82,9 @@ class Main:
                     self.progress.success[errors] = succeed
 
             self.progress.save()
+            push_to_gateway('localhost:9091',
+                            job=self.progress.name, 
+                            registry=registry)
             if end_of_work:
                 print("No more work to do, waiting for executor shutdown...")
                 self.executor.shutdown(True, cancel_futures=False)
@@ -101,15 +106,6 @@ class Main:
                 batch_tmp.append(np.array(n))
         return batch_tmp, self.batchID, False
 
-    def __metric_thread(self):
-        def thread():
-            while True:
-                push_to_gateway('localhost:9091',
-                                job=self.progress.name, registry=registry)
-                time.sleep(2)
-
-        Thread(target=thread, name='metric_thread').start()
-
     def __restore_progress(self):
         self.progress = Progress(self.__PROGRESS_FILE)
         if not self.progress.is_new():
@@ -125,9 +121,9 @@ class Main:
             print(
                 f"Loaded previous progress in {load_time}ms: err={self.errors}, skipped={self.executed}")
         else:
-            self.errors = 7
+            self.errors = 5
             self.comb = combinations(self._range, self.errors)
 
 
 if __name__ == '__main__':
-    Main()
+    Main(batch_size=1000, chk_type=84, test_method="EHPC_decoding")
