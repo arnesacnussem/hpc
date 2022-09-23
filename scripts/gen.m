@@ -1,4 +1,4 @@
-function gen(check_bits)
+function gen(check_bit)
 
     pkg load communications;
     % 生成HGNK
