@@ -5,7 +5,9 @@ sudo cp -f "$BASEDIR/grafana.ini" /etc/grafana/grafana.ini
 sudo cp -f "$BASEDIR/prometheus.yml" /etc/prometheus/prometheus.yml
 
 mkdir prometheus_data
-sudo ln prometheus_data /var/lib/prometheus/
+sudo rm -rf 
+sudo ln -s prometheus_data /var/lib/prometheus/
+sudo chmod 777 /var/lib/prometheus/
 sudo mkdir -p /var/run/prometheus
 sudo chmod 777 /var/run/prometheus/
 sudo service grafana-server start &
