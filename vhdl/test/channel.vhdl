@@ -6,6 +6,9 @@ USE ieee.math_real.round;
 USE work.generated.ALL;
 
 ENTITY channel IS
+    GENERIC (
+        CHANNEL_ERROR_RATE : INTEGER := 3
+    );
     PORT (
         en      : IN STD_LOGIC;
         ready   : OUT STD_LOGIC := '0';
