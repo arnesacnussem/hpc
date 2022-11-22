@@ -1,8 +1,8 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.types.ALL;
-USE work.test_values.ALL;
+USE work.generated.ALL;
+USE work.test_data.ALL;
 
 ENTITY encoder_mxio_tb IS
 END;

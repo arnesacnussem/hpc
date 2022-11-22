@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
-USE work.types.ALL;
+USE work.generated.ALL;
 
 PACKAGE utils IS
     FUNCTION bitToChar(b            : BIT) RETURN CHARACTER;

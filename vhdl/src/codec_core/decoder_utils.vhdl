@@ -1,8 +1,7 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.types.ALL;
-USE work.config.ALL;
+USE work.generated.ALL;
 USE work.utils.ALL;
 
 PACKAGE decoder_utils IS

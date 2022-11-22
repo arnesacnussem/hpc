@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.numeric_bit.ALL;
-USE work.types.ALL;
+USE work.generated.ALL;
 ENTITY matrix_io IS
     GENERIC (
         COL_CNT  : POSITIVE := 1; -- 矩阵列数
