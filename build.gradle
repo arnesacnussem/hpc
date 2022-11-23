@@ -20,7 +20,7 @@ class CustomEventLogger extends BuildAdapter implements TaskExecutionListener {
     }
 
 }
-gradle.useLogger(new CustomEventLogger())
+// gradle.useLogger(new CustomEventLogger())
 
 buildDir = 'build'
 def ghdl = [
@@ -41,15 +41,10 @@ task compileScripts(type: YarnTask) {
     args = ['compileScripts']
 }
 
-task vhdlGen(type:NodeTask) {
-    group 'build:pre'
-    description 'Generate pre-defined vhdl'
+task vhdlGen(type:Exec) {
+    workingDir 'scripts'
+    commandLine 'python', 'generator.py', '73', '3'
     dependsOn compileScripts
-
-    inputs.files files("${buildDir}/dist", 'scripts/*.m')
-    outputs.dir 'vhdl/gen'
-
-    script = file("$buildDir/dist/generator.js")
     finalizedBy {
         copy2q2prj
     }

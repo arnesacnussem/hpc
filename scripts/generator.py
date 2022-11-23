@@ -105,6 +105,9 @@ END PACKAGE test_data;
 """
 
 print(brief, file=sys.stderr)
+if not os.path.isdir(f"{SCRIPT_DIR}/../vhdl/gen"):
+    os.mkdir(f"{SCRIPT_DIR}/../vhdl/gen")
+
 open(f"{SCRIPT_DIR}/../vhdl/gen/generated.vhdl", "w+").write(header +
                                                              types+configs+footer)
 open(f"{SCRIPT_DIR}/../vhdl/gen/test_data.vhdl", "w+").write(test_data)
