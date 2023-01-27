@@ -13,7 +13,7 @@ if sys.argv[1] in ["73", "84"]:
     output_type = sys.argv[1]
 
 chk_bit = 3
-if sys.argv[2] != None:
+if sys.argv[2] is not None:
     chk_bit = int(sys.argv[2])
 
 if output_type == "84":
@@ -84,7 +84,8 @@ configs = f"""
         {", ".join(np.transpose(table)[0].astype(int).astype(str))}
     );
 
-    CONSTANT SYNDTABLE : MXIO(0 TO {shapeSyndT[0] - 1})(0 TO {shapeSyndT[1] - 1}) := (
+    CONSTANT SYNDTABLE : MXIO(0 TO {shapeSyndT[0] - 1})(0 TO {
+        shapeSyndT[1] - 1}) := (
         {mat2VHDstr(syndt)}
     );
 """
@@ -100,14 +101,18 @@ PACKAGE test_data IS
         {mat2VHDstr(test_message)}
     );
 
-    CONSTANT MESSAGE_SERIAL : MSG_SERIAL := "{"".join(["".join(msgI) for _, msgI in enumerate(test_message)])}";
+    CONSTANT MESSAGE_SERIAL : MSG_SERIAL := "{
+        "".join(["".join(msgI) for _, msgI in enumerate(test_message)])}";
 END PACKAGE test_data;
 """
-
 print(brief, file=sys.stderr)
-if not os.path.isdir(f"{SCRIPT_DIR}/../vhdl/gen"):
-    os.mkdir(f"{SCRIPT_DIR}/../vhdl/gen")
 
-open(f"{SCRIPT_DIR}/../vhdl/gen/generated.vhdl", "w+").write(header +
-                                                             types+configs+footer)
-open(f"{SCRIPT_DIR}/../vhdl/gen/test_data.vhdl", "w+").write(test_data)
+output_dir = sys.argv[3]
+print(f"output write to {output_dir}", file=sys.stderr)
+if not os.path.isdir(f"{output_dir}"):
+    os.mkdir(f"{output_dir}")
+
+
+open(f"{output_dir}/generated.vhdl", "w+"
+     ).write(header + types + configs + footer)
+open(f"{output_dir}/test_data.vhdl", "w+").write(test_data)

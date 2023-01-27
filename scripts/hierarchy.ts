@@ -131,7 +131,7 @@ const topologicSort = (dict:VHDLDict)=>{
   }
   
   const rdag = g.topologicalSort().map((i) => dict[keyList[i]]);
-  console.log(
+  clog(
     "Sorted: ",
     rdag.map((v) => v.name)
   );
@@ -149,6 +149,6 @@ const rdag = topologicSort(dict);
 const output = rdag.map((n) => path.resolve(n.path)).join(" ");
 const outputFile = process.argv[2] || null;
 if (outputFile === null) {
-  process.stdin.write(output);
+  process.stdout.write(output);
 } else fs.writeFileSync(outputFile, output);
 clog("Generated hierarchy list");

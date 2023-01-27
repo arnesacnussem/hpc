@@ -34,7 +34,7 @@ BEGIN
 
     decoder_inst : ENTITY work.decoder
         GENERIC MAP(
-            decoder_type => PMS2
+            decoder_type => DUMMY
         )
         PORT MAP(
             codeIn  => code,

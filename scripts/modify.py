@@ -23,7 +23,7 @@ def get_abspath(fIn: str, fOut: str) -> tuple[str, str]:
 def modify_hierarchy_list(abs_in: str, abs_out: str, hlist: str) -> NoReturn:
     useStdio = hlist == '-'
     if useStdio:
-        print('using stdin as hlist', file=sys.stderr)
+        print('using stdin as hierarchy list', file=sys.stderr)
         hlist = sys.stdin.read()
     else:
         hlist = open(hlist).read()
@@ -48,6 +48,7 @@ def modify(fIn: str, fOut: str, replace: str, hlist: str):
     copy_and_modify_file(abs_in, abs_out,
                          "DUMMY", replace.upper())
     modify_hierarchy_list(abs_in, abs_out, hlist)
+    print("...ok", file=sys.stderr)
 
 
 if __name__ == '__main__':

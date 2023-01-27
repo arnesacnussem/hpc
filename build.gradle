@@ -1,7 +1,7 @@
 /* groovylint-disable BuilderMethodWithSideEffects, DuplicateStringLiteral, FactoryMethodName, LineLength, UnusedMethodParameter, VariableTypeRequired */
 plugins {
-    id("com.github.node-gradle.node") version 
-    id("net.rdrei.android.buildtimetracker") version '0.11.0'
+    id 'com.github.node-gradle.node' version '3.5.1'
+    id 'net.rdrei.android.buildtimetracker' version '0.11.0'
 }
 buildtimetracker {
     reporters {
@@ -18,16 +18,16 @@ String props(String name, String defaultVal) {
 }
 
 def dir = [
-    src: 'vhdl',
-out: 'out',
-gen: "${out}/generated",
-scripts: 'scripts'
+        src    : 'vhdl',
+        out    : 'out',
+        gen    : 'vhdl/generated',
+        scripts: 'scripts'
 ]
 def ghdl = [
-    exec: 'ghdl',
-workDir: "${dir.out}",
-args: ['--std=08', '-fcolor-diagnostics'],
-topLevel: props('ghdl_topLevel', 'decoder_tb')
+        exec    : 'ghdl',
+        workDir : "${dir.out}",
+        args    : ['--std=08', '-fcolor-diagnostics'],
+        topLevel: props('ghdl_topLevel', 'decoder_tb')
 ]
 
 task compileScripts(type: Exec) {
@@ -35,7 +35,7 @@ task compileScripts(type: Exec) {
     description 'Use tsc to compile helper scripts'
     dependsOn yarn
 
-            inputs.dir 'scripts'
+    inputs.dir 'scripts'
     outputs.dir "${dir.out}/dist"
 
     commandLine 'yarn', 'tsc', '--outDir', "${dir.out}/dist"
@@ -55,46 +55,46 @@ task vhdlGen(type: Exec) {
 
     inputs.dir 'scripts'
     outputs.dir dir.gen
-            finalizedBy {
-                copy2q2prj
-            }
+    finalizedBy {
+        copy2q2prj
+    }
 }
 
 task hierarchy(type: NodeTask) {
     group 'build:pre'
     description 'Generate vhdl hierarchy for ghdl analyze'
     dependsOn vhdlGen
-            dependsOn compileScripts
+    dependsOn compileScripts
 
-            String hierarchyOut = "${dir.out}/hierarchy.list"
+    outputs.cacheIf { true }
     inputs.files fileTree('vhdl')
-    outputs.file hierarchyOut
 
-            script = file("${dir.out}/dist/hierarchy.js")
-    args = ["${hierarchyOut}"]
+    String outFile = "${dir.out}/hierarchy.list"
+    outputs.file "${dir.out}/modify.vhdl"
+    outputs.file outFile
+
+    script = file("${dir.out}/dist/hierarchy.js")
     def output = new ByteArrayOutputStream()
-    execOverrides { ->
-        it.errorOutput = System.err
-        it.standardOutput = output
+    def output2 = new ByteArrayOutputStream()
+    execOverrides {
+        errorOutput = System.err
+        standardOutput = output
     }
     doLast {
-        ext.output = {
-            return standardOutput.toString()
+        exec {
+            commandLine 'python', "${dir.scripts}/modify.py", "${dir.src}/test/testbenchs/decoder_tb.vhdl", "${dir.out}/modify.vhdl", modify_replace, '-'
+            errorOutput = System.err
+            standardOutput = output2
+            standardInput = new ByteArrayInputStream(output.toString().bytes)
         }
     }
-}
-
-task modify(type: Exec) {
-    dependsOn hierarchy
-
-            commandLine 'python', 'scripts/ModifyDecoderType.py', 'modify_IN', 'modify_OUT', 'modify_REPLACE', '-'
-    errorOutput = System.err
-    standardInput = new ByteArrayInputStream(hierarchy.output())
-    standardInput.close()
     doLast {
-        ext.hierarchy = {
-            retrun
-        }
+        String outStr = output2
+        file(outFile).text = outStr
+    }
+
+    ext.list = {
+        return file(outFile).text.trim().split(' ')
     }
 }
 
@@ -103,12 +103,15 @@ task analyze {
     description 'Run ghdl analyze'
     dependsOn hierarchy
 
-            doLast {
-                exec {
-                    workingDir = ghdl.workDir
-                    commandLine = [ghdl.exec, '-a', ghdl.args, hierarchy.list()].flatten()
-                }
-            }
+    inputs.files files('vhdl')
+    outputs.dir dir.out
+
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine = [ghdl.exec, '-a', ghdl.args, hierarchy.list()].flatten()
+        }
+    }
 }
 
 task elaborate {
@@ -116,15 +119,15 @@ task elaborate {
     description 'Elaborate design'
     dependsOn analyze
 
-            inputs.files files('vhdl', hierarchy.list())
+    inputs.files files('vhdl')
     outputs.dir dir.out
 
-            doLast {
-                exec {
-                    workingDir = ghdl.workDir
-                    commandLine = [ghdl.exec, '-e', ghdl.args, ghdl.topLevel].flatten()
-                }
-            }
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine = [ghdl.exec, '-e', ghdl.args, ghdl.topLevel].flatten()
+        }
+    }
 }
 
 task run {
@@ -132,12 +135,12 @@ task run {
     description 'Run top-level design'
     dependsOn elaborate
 
-            doLast {
-                exec {
-                    workingDir = ghdl.workDir
-                    commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns'].flatten()
-                }
-            }
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns'].flatten()
+        }
+    }
 }
 
 task waveform {
@@ -145,12 +148,12 @@ task waveform {
     description 'Open waveform in GTKWave'
     dependsOn run
 
-            doLast {
-                exec {
-                    workingDir = ghdl.workDir
-                    commandLine 'gtkwave', '-f', 'wave.ghw'
-                }
-            }
+    doLast {
+        exec {
+            workingDir = ghdl.workDir
+            commandLine 'gtkwave', '-f', 'wave.ghw'
+        }
+    }
 }
 
 task clean {
@@ -159,8 +162,8 @@ task clean {
 
     doLast {
         delete dir.out
-                delete dir.gen
-                delete 'q2prj'
+        delete dir.gen
+        delete 'q2prj'
     }
 }
 
@@ -178,10 +181,10 @@ task copy2q2prj {
     inputs.files files(dir.src, dir.out)
     outputs.dir 'q2prj'
     dependsOn elaborate
-            doLast {
-                copy {
-                    from hierarchy.list()
-                    into 'q2prj'
-                }
-            }
+    doLast {
+        copy {
+            from hierarchy.list()
+            into 'q2prj'
+        }
+    }
 }
