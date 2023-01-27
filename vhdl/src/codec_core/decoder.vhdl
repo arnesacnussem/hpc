@@ -7,7 +7,7 @@ USE work.decoder_types.ALL;
 
 ENTITY decoder IS
     GENERIC (
-        DECODER_TYPE : DecoderType := UNDEFINED
+        DECODER_TYPE : DecoderType := DUMMY
     );
     PORT (
         codeIn  : IN CODEWORD_MAT;      -- codeword matrix
@@ -23,9 +23,9 @@ ARCHITECTURE DecoderSelect OF decoder IS
 BEGIN
 
     decoder_gen : CASE DECODER_TYPE GENERATE
-        WHEN UNDEFINED =>
+        WHEN DUMMY =>
             -- Generate nothing.
-            ASSERT DECODER_TYPE = UNDEFINED REPORT "Nothing generated" SEVERITY failure;
+            ASSERT DECODER_TYPE = DUMMY REPORT "this is a dummy decoder for build script to generate code, nothing generated" SEVERITY failure;
         WHEN PMS2 =>
             inst : ENTITY work.decoder_pms2
                 PORT MAP(

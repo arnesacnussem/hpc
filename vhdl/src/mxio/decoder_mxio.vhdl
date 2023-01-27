@@ -12,7 +12,7 @@ ENTITY decoder_mxio IS
         -- [0]: 输入缓存
         -- [1]: 输出填充
         IO_CONTROL   : BIT_VECTOR(0 TO 1) := "10";
-        DECODER_TYPE : DecoderType        := UNDEFINED
+        DECODER_TYPE : DecoderType        := DUMMY
     );
     PORT (
         code  : IN BIT_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
