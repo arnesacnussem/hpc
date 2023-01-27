@@ -17,3 +17,4 @@ q2prj
 vhdl/generated/
 tester/__pycache__
 tester/progress.json
+.idea
