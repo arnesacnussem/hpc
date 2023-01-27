@@ -1,7 +1,7 @@
 /* groovylint-disable BuilderMethodWithSideEffects, DuplicateStringLiteral, FactoryMethodName, LineLength, UnusedMethodParameter, VariableTypeRequired */
 plugins {
-    id 'com.github.node-gradle.node' version '3.5.1'
-    id 'net.rdrei.android.buildtimetracker' version '0.11.0'
+    id("com.github.node-gradle.node") version 
+    id("net.rdrei.android.buildtimetracker") version '0.11.0'
 }
 buildtimetracker {
     reporters {
@@ -13,47 +13,32 @@ buildtimetracker {
     }
 }
 
-class CustomEventLogger extends BuildAdapter implements TaskExecutionListener {
-
-    void beforeExecute(Task task) {
-        super()
-    }
-    void afterExecute(Task task, TaskState state) {
-        super()
-    }
-    void buildFinished(BuildResult result) {
-        if (result.failure != null) {
-            println '\033[31;1mBUILD FAILED\033[0m'
-        } else {
-            println '\033[32;1mBUILD SUCCESS\033[0m'
-        }
-    }
-
+String props(String name, String defaultVal) {
+    return project.findProperty(name) ?: defaultVal
 }
-// gradle.useLogger(new CustomEventLogger())
 
-String buildDir = 'out'
-String hierarchyOut = "${buildDir}/.hlist"
-def ghdl = [
-        exec: 'ghdl',
-        workDir: buildDir,
-        args: ['--std=08', '-fcolor-diagnostics'],
-        topLevel: 'decoder_tb'
+def dir = [
+    src: 'vhdl',
+out: 'out',
+gen: "${out}/generated",
+scripts: 'scripts'
 ]
-
-if (project.hasProperty('ghdl_topLevel')) {
-    ghdl.topLevel = ghdl_topLevel
-}
+def ghdl = [
+    exec: 'ghdl',
+workDir: "${dir.out}",
+args: ['--std=08', '-fcolor-diagnostics'],
+topLevel: props('ghdl_topLevel', 'decoder_tb')
+]
 
 task compileScripts(type: Exec) {
     group 'build:pre'
     description 'Use tsc to compile helper scripts'
     dependsOn yarn
 
-    inputs.dir 'scripts'
-    outputs.dir "${buildDir}/dist"
+            inputs.dir 'scripts'
+    outputs.dir "${dir.out}/dist"
 
-    commandLine 'yarn', 'tsc', '--outDir', "${buildDir}/dist"
+    commandLine 'yarn', 'tsc', '--outDir', "${dir.out}/dist"
 }
 
 task vhdlGen(type: Exec) {
@@ -66,28 +51,50 @@ task vhdlGen(type: Exec) {
     if (project.hasProperty('vhdlGenChkBits')) {
         chkBits = vhdlGen_chkBits
     }
-    commandLine 'python', 'generator.py', size, chkBits
+    commandLine 'python', 'generator.py', size, chkBits, file(dir.gen).absolutePath
 
     inputs.dir 'scripts'
-    outputs.dir 'vhdl/gen'
-    finalizedBy {
-        copy2q2prj
-    }
+    outputs.dir dir.gen
+            finalizedBy {
+                copy2q2prj
+            }
 }
 
 task hierarchy(type: NodeTask) {
     group 'build:pre'
     description 'Generate vhdl hierarchy for ghdl analyze'
     dependsOn vhdlGen
-    dependsOn compileScripts
+            dependsOn compileScripts
 
+            String hierarchyOut = "${dir.out}/hierarchy.list"
     inputs.files fileTree('vhdl')
     outputs.file hierarchyOut
 
-    script = file("${buildDir}/dist/hierarchy.js")
+            script = file("${dir.out}/dist/hierarchy.js")
     args = ["${hierarchyOut}"]
-    ext.list = {
-        return file(hierarchyOut).text.split(' ')
+    def output = new ByteArrayOutputStream()
+    execOverrides { ->
+        it.errorOutput = System.err
+        it.standardOutput = output
+    }
+    doLast {
+        ext.output = {
+            return standardOutput.toString()
+        }
+    }
+}
+
+task modify(type: Exec) {
+    dependsOn hierarchy
+
+            commandLine 'python', 'scripts/ModifyDecoderType.py', 'modify_IN', 'modify_OUT', 'modify_REPLACE', '-'
+    errorOutput = System.err
+    standardInput = new ByteArrayInputStream(hierarchy.output())
+    standardInput.close()
+    doLast {
+        ext.hierarchy = {
+            retrun
+        }
     }
 }
 
@@ -96,12 +103,12 @@ task analyze {
     description 'Run ghdl analyze'
     dependsOn hierarchy
 
-    doLast {
-        exec {
-            workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-a', ghdl.args, hierarchy.list()].flatten()
-        }
-    }
+            doLast {
+                exec {
+                    workingDir = ghdl.workDir
+                    commandLine = [ghdl.exec, '-a', ghdl.args, hierarchy.list()].flatten()
+                }
+            }
 }
 
 task elaborate {
@@ -109,15 +116,15 @@ task elaborate {
     description 'Elaborate design'
     dependsOn analyze
 
-    inputs.files files('vhdl', "${buildDir}/.list")
-    outputs.dir buildDir
+            inputs.files files('vhdl', hierarchy.list())
+    outputs.dir dir.out
 
-    doLast {
-        exec {
-            workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-e', ghdl.args, ghdl.topLevel].flatten()
-        }
-    }
+            doLast {
+                exec {
+                    workingDir = ghdl.workDir
+                    commandLine = [ghdl.exec, '-e', ghdl.args, ghdl.topLevel].flatten()
+                }
+            }
 }
 
 task run {
@@ -125,12 +132,12 @@ task run {
     description 'Run top-level design'
     dependsOn elaborate
 
-    doLast {
-        exec {
-            workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns'].flatten()
-        }
-    }
+            doLast {
+                exec {
+                    workingDir = ghdl.workDir
+                    commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns'].flatten()
+                }
+            }
 }
 
 task waveform {
@@ -138,12 +145,12 @@ task waveform {
     description 'Open waveform in GTKWave'
     dependsOn run
 
-    doLast {
-        exec {
-            workingDir = ghdl.workDir
-            commandLine 'gtkwave', '-f', 'wave.ghw'
-        }
-    }
+            doLast {
+                exec {
+                    workingDir = ghdl.workDir
+                    commandLine 'gtkwave', '-f', 'wave.ghw'
+                }
+            }
 }
 
 task clean {
@@ -151,9 +158,9 @@ task clean {
     description 'Cleanup workspace'
 
     doLast {
-        delete "$buildDir"
-        delete 'q2prj'
-        delete 'vhdl/gen'
+        delete dir.out
+                delete dir.gen
+                delete 'q2prj'
     }
 }
 
@@ -168,15 +175,13 @@ delete fileTree('.') {
 
 task copy2q2prj {
     description 'copy sources to quartus project dir'
-    inputs.dir 'vhdl'
+    inputs.files files(dir.src, dir.out)
     outputs.dir 'q2prj'
-
-    doLast {
-        copy {
-            from fileTree('vhdl') {
-                include '**/*.vhdl'
-            }.files
-            into 'q2prj'
-        }
-    }
+    dependsOn elaborate
+            doLast {
+                copy {
+                    from hierarchy.list()
+                    into 'q2prj'
+                }
+            }
 }
