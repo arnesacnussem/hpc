@@ -1,6 +1,16 @@
 /* groovylint-disable BuilderMethodWithSideEffects, DuplicateStringLiteral, FactoryMethodName, LineLength, UnusedMethodParameter, VariableTypeRequired */
 plugins {
-    id 'com.github.node-gradle.node' version '3.4.0'
+    id 'com.github.node-gradle.node' version '3.5.1'
+    id 'net.rdrei.android.buildtimetracker' version '0.11.0'
+}
+buildtimetracker {
+    reporters {
+        summary {
+            ordered false
+            threshold 100
+            barstyle 'unicode'
+        }
+    }
 }
 
 class CustomEventLogger extends BuildAdapter implements TaskExecutionListener {
@@ -22,7 +32,8 @@ class CustomEventLogger extends BuildAdapter implements TaskExecutionListener {
 }
 // gradle.useLogger(new CustomEventLogger())
 
-buildDir = 'build'
+String buildDir = 'out'
+String hierarchyOut = "${buildDir}/.hlist"
 def ghdl = [
         exec: 'ghdl',
         workDir: buildDir,
@@ -30,7 +41,11 @@ def ghdl = [
         topLevel: 'decoder_tb'
 ]
 
-task compileScripts(type: YarnTask) {
+if (project.hasProperty('ghdl_topLevel')) {
+    ghdl.topLevel = ghdl_topLevel
+}
+
+task compileScripts(type: Exec) {
     group 'build:pre'
     description 'Use tsc to compile helper scripts'
     dependsOn yarn
@@ -38,13 +53,23 @@ task compileScripts(type: YarnTask) {
     inputs.dir 'scripts'
     outputs.dir "${buildDir}/dist"
 
-    args = ['compileScripts']
+    commandLine 'yarn', 'tsc', '--outDir', "${buildDir}/dist"
 }
 
-task vhdlGen(type:Exec) {
+task vhdlGen(type: Exec) {
     workingDir 'scripts'
-    commandLine 'python', 'generator.py', '73', '3'
-    dependsOn compileScripts
+    String size = '73'
+    String chkBits = '3'
+    if (project.hasProperty('vhdlGenSize')) {
+        size = vhdlGen_size
+    }
+    if (project.hasProperty('vhdlGenChkBits')) {
+        chkBits = vhdlGen_chkBits
+    }
+    commandLine 'python', 'generator.py', size, chkBits
+
+    inputs.dir 'scripts'
+    outputs.dir 'vhdl/gen'
     finalizedBy {
         copy2q2prj
     }
@@ -54,14 +79,15 @@ task hierarchy(type: NodeTask) {
     group 'build:pre'
     description 'Generate vhdl hierarchy for ghdl analyze'
     dependsOn vhdlGen
+    dependsOn compileScripts
 
     inputs.files fileTree('vhdl')
-    String out = "${buildDir}/.list"
-    outputs.file out
+    outputs.file hierarchyOut
 
     script = file("${buildDir}/dist/hierarchy.js")
+    args = ["${hierarchyOut}"]
     ext.list = {
-        return file(out).text.split(' ')
+        return file(hierarchyOut).text.split(' ')
     }
 }
 
@@ -126,6 +152,8 @@ task clean {
 
     doLast {
         delete "$buildDir"
+        delete 'q2prj'
+        delete 'vhdl/gen'
     }
 }
 
@@ -151,13 +179,4 @@ task copy2q2prj {
             into 'q2prj'
         }
     }
-}
-
-task elaborateTest {
-    def fList = fileTree('./vhdl/test/testbenchs') {
-        include '*.vhdl'
-         }.collect {
-            f -> f.name - ~/\.\w+$/
-    }
-    println fList
 }

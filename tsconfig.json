@@ -12,7 +12,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": false,
-    "outDir": "build/dist",
     "downlevelIteration": true,
     "rootDir": "scripts"
   },

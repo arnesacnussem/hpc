@@ -5,7 +5,7 @@ const entity_deps = /^\s*.+\s?\:\s?ENTITY\swork\.(.+)$/gim;
 
 import fs from "fs";
 import path from "path";
-const clog = console.log;
+const clog = console.error;
 interface VHDLFile {
   name: string;
   path: string;
@@ -33,7 +33,7 @@ const readFile = (filePath: string): VHDLFile => {
     package: [...content.matchAll(package_name)].map((m) => m[1])[0] || "",
     entity: [...content.matchAll(entity_name)].map((m) => m[1])[0] || "",
   };
-  console.log(
+  clog(
     `${filePath} depends on ${[...file.packageDeps, ...file.entityDeps].join(
       ", "
     )}`
@@ -139,10 +139,6 @@ const topologicSort = (dict:VHDLDict)=>{
 }
 
 // use tolologic sort build rDAG
-
-
-// readFile("./vhdl/test/encoder_tb.vhdl");
-// readFile("./vhdl/gen/config.vhdl");
 const list = listFiles().map(readFile);
 const dict = list.reduce((p, c) => {
   p[c.name] = c;
@@ -150,8 +146,9 @@ const dict = list.reduce((p, c) => {
 }, {} as VHDLDict);
 const rdag = topologicSort(dict);
 
-fs.writeFileSync(
-  "build/.list",
-  rdag.map((n) => path.resolve(n.path)).join(" ")
-);
-console.log("Generated hierarchy list");
+const output = rdag.map((n) => path.resolve(n.path)).join(" ");
+const outputFile = process.argv[2] || null;
+if (outputFile === null) {
+  process.stdin.write(output);
+} else fs.writeFileSync(outputFile, output);
+clog("Generated hierarchy list");
