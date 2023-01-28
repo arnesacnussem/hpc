@@ -4,7 +4,7 @@ Hamming Product Code on FPGA
 
 ## Requirement
 
-use docker image at [.devcontainer/dockerfile](.devcontainer/dockerfile)
+use docker image at [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
 
 ---
 
