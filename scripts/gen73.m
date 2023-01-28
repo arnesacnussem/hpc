@@ -5,6 +5,7 @@ function [H, G, n, k, table, syndt] = gen73(check_bit)
     [H,G,n,k] = hammgen(check_bit);
     table = create_table(H);
     syndt = syndtable(H);
+    H = H';
 end
 
 

@@ -13,6 +13,7 @@ function [G, H, n, k, table, syndt] = gen84(check_bit)
 
     table = create_table(H);
     syndt = syndtable(H);
+    H = H';
 end
 
 function [library] = create_table(H)
