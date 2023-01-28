@@ -24,8 +24,8 @@ parser.add_argument("-chk", metavar="CHK",
 
 parser.add_argument("-r", "--run", action="store_true",
                     help="run elabroated testbench")
-parser.add_argument("-tb", "--testbench", default="decoder_tb",
-                    help="specifiy testbench to elaborate")
+parser.add_argument("--top", default="decoder_tb",
+                    help="specifiy top-level to elaborate")
 parser.add_argument("-w", "--wave", action="store_true",
                     help="show waveform use gtkwave")
 parser.add_argument("-c", "--clean", action="store_true",
@@ -49,7 +49,7 @@ if '--' in unusedArgs:
 pArg = {
     "vhdlGen_size": algorithms[args.alg],
     "vhdlGen_chkBits": args.chk,
-    "ghdl_topLevel": args.testbench,
+    "ghdl_topLevel": args.top,
     'modify_replace': args.alg.upper()
 }
 pArg_list = [
