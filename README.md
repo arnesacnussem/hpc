@@ -1,17 +1,15 @@
-# hpc
+# HPC on FPGA
 
 Hamming Product Code on FPGA
 
-# Getting start
-
 ## Requirement
-1. jdk 11
-2. NodeJS
-3. Yarn
-4. GNU Octave
-5. GHDL
 
-# Generate code
-```
-yarn && ./gradlew elab
+use docker image at [.devcontainer/dockerfile](.devcontainer/dockerfile)
+
+---
+
+## Build or Run
+
+```bash
+./build --help
 ```
