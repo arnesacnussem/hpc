@@ -1,3 +1,5 @@
+import sourceMapSupport from 'source-map-support'
+sourceMapSupport.install()
 const pakcage_dep = /^use\swork\.(.+)\.all;$/gim;
 const package_name = /^package\s(.+)\sis$/gim;
 const entity_name = /^ENTITY\s(.+)\sIS$/gim;

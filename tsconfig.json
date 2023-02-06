@@ -13,7 +13,8 @@
     "isolatedModules": true,
     "noEmit": false,
     "downlevelIteration": true,
-    "rootDir": "scripts"
+    "rootDir": "scripts",
+    "inlineSourceMap": true
   },
   "include": ["scripts/"],
   "ts-node": {
