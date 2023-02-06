@@ -40,7 +40,9 @@
         "richardwillis.vscode-gradle-extension-pack",
         "NicolasVuillamy.vscode-groovy-lint",
         "eamodio.gitlens",
-        "vscjava.vscode-java-pack"
+        "vscjava.vscode-java-pack",
+        "hediet.vscode-drawio-insiders-build",
+        "bierner.github-markdown-preview"
       ]
     }
   }
