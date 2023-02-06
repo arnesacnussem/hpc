@@ -35,7 +35,7 @@ task compileScripts(type: Exec) {
     description 'Use tsc to compile helper scripts'
     dependsOn yarn
 
-    inputs.dir 'scripts'
+    inputs.dir fileTree(dir:'scripts', include: '**.ts')
     outputs.dir "${dir.out}/dist"
 
     commandLine 'yarn', 'tsc', '--outDir', "${dir.out}/dist"
