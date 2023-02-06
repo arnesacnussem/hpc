@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import argparse
 import json
 import sys
@@ -82,6 +81,8 @@ if args.dry_run or args.verbose > 0:
     print("\n\t"+cmd_str+"\n")
 
 if not args.dry_run:
-    os.system(cmd_str)
+    import subprocess
+    returned_value = subprocess.call(cmd_str, shell=True)
+    exit(returned_value)
 else:
     print("Dry-run, skip command executing.")
