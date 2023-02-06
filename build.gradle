@@ -55,9 +55,6 @@ task vhdlGen(type: Exec) {
 
     inputs.dir 'scripts'
     outputs.dir dir.gen
-    finalizedBy {
-        copy2q2prj
-    }
 }
 
 task hierarchy(type: NodeTask) {
@@ -163,7 +160,6 @@ task clean {
     doLast {
         delete dir.out
         delete dir.gen
-        delete 'q2prj'
     }
 }
 
@@ -176,15 +172,14 @@ delete fileTree('.') {
     include 'hs_err_*.log'
 }
 
-task copy2q2prj {
-    description 'copy sources to quartus project dir'
-    inputs.files files(dir.src, dir.out)
-    outputs.dir 'q2prj'
+task pack(type: Tar) {
     dependsOn elaborate
-    doLast {
-        copy {
-            from hierarchy.list()
-            into 'q2prj'
-        }
+
+    archiveName = 'pack.tar.gz'
+    into('/') {
+        from hierarchy.list()
     }
+
+    destinationDir  file(dir.out)
+    compression = Compression.GZIP
 }
