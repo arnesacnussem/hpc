@@ -34,6 +34,8 @@ syndt = {np.shape(syndt)}
 
 header = """
 library ieee;
+USE ieee.std_logic_1164.ALL;
+
 PACKAGE generated IS
 
 """
@@ -44,18 +46,18 @@ shapeH = np.shape(H)
 shapeSyndT = np.shape(syndt)
 types = f"""
     TYPE REF_TABLE_ARR IS ARRAY (0 TO {len(table) - 1}) OF INTEGER;
-    TYPE MXIO_ROW IS ARRAY(NATURAL RANGE <>) OF BIT;
+    SUBTYPE MXIO_ROW IS BIT_VECTOR;
     TYPE MXIO IS ARRAY(NATURAL RANGE <>) OF MXIO_ROW;
 
-    TYPE GEN_MAT IS ARRAY (0 TO {k - 1}, 0 TO {n - 1}) OF BIT;
-    TYPE CHK_MAT IS ARRAY (0 TO {shapeH[0] - 1}, 0 TO {shapeH[1] - 1}) OF BIT;
+    SUBTYPE GEN_MAT IS MXIO (0 TO {k - 1})(0 TO {n - 1});
+    SUBTYPE CHK_MAT IS MXIO (0 TO {shapeH[0] - 1})(0 TO {shapeH[1] - 1});
 
     SUBTYPE MSG_LINE IS MXIO_ROW (0 TO {k - 1});
-    SUBTYPE MSG_MAT IS MXIO (0 TO {k - 1}) (0 TO {k - 1});
+    SUBTYPE MSG_MAT IS MXIO (0 TO {k - 1})(0 TO {k - 1});
     SUBTYPE MSG_SERIAL IS MXIO_ROW (0 TO {k * k - 1});
 
     SUBTYPE CODEWORD_LINE IS MXIO_ROW(0 TO {n - 1});
-    SUBTYPE CODEWORD_MAT IS MXIO (0 TO {n - 1}) (0 TO {n - 1});
+    SUBTYPE CODEWORD_MAT IS MXIO (0 TO {n - 1})(0 TO {n - 1});
     SUBTYPE CODEWORD_SERIAL IS MXIO_ROW (0 TO {n * n - 1});
 """
 

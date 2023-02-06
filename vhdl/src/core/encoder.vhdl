@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_bit.ALL;
 USE work.generated.ALL;
-USE work.utils.ALL;
+USE work.mxio_util.ALL;
 
 ENTITY encoder IS
     PORT (
@@ -29,7 +29,7 @@ ARCHITECTURE Encoder OF encoder IS
         lout := (OTHERS => '0');
         FOR col IN 0 TO CODEWORD_LENGTH LOOP
             FOR row IN 0 TO MSG_LENGTH LOOP
-                lout(col) := (lin(row) AND GENERATE_MATRIX(row, col)) XOR lout(col);
+                lout(col) := (lin(row) AND GENERATE_MATRIX(row)(col)) XOR lout(col);
             END LOOP;
         END LOOP;
     END PROCEDURE;

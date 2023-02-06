@@ -4,13 +4,18 @@ USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
 USE work.generated.ALL;
 
-PACKAGE utils IS
+PACKAGE mxio_util IS
     FUNCTION bitToChar(b            : BIT) RETURN CHARACTER;
     FUNCTION MXIOROW_toString (bVec : MXIO_ROW) RETURN STRING;
     FUNCTION MXIO_toString (mx      : MXIO) RETURN STRING;
+
+    FUNCTION getColumn (
+        mat   : MXIO;
+        index : INTEGER
+    ) RETURN MXIO_ROW;
 END PACKAGE;
 
-PACKAGE BODY utils IS
+PACKAGE BODY mxio_util IS
 
     FUNCTION bitToChar(b : BIT) RETURN CHARACTER IS
     BEGIN
@@ -44,5 +49,18 @@ PACKAGE BODY utils IS
             index                                := index + len + 1;
         END LOOP;
         RETURN li;
+    END FUNCTION;
+
+    FUNCTION getColumn (
+        mat   : MXIO;
+        index : INTEGER
+    ) RETURN MXIO_ROW IS
+        VARIABLE col : MXIO_ROW(mat(0)'RANGE);
+    BEGIN
+        -- 列转行
+        FOR row IN mat'RANGE LOOP
+            col(row) := mat(row)(index);
+        END LOOP;
+        RETURN col;
     END FUNCTION;
 END PACKAGE BODY;

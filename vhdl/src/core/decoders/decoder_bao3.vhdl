@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.generated.ALL;
-USE work.utils.ALL;
+USE work.mxio_util.ALL;
 USE work.decoder_utils.ALL;
 
 ENTITY decoder_bao3 IS
@@ -64,7 +64,7 @@ BEGIN
                         END IF;
 
                     WHEN R2 =>
-                        extract_column(mat => code, index => index, col => column_temp);
+                        column_temp := getColumn(mat => code, index => index);
                         line_decode(column_temp, err_exist, err_pos);
 
                         IF err_exist THEN

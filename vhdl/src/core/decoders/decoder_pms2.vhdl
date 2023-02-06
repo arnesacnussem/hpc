@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.generated.ALL;
-USE work.utils.ALL;
+USE work.mxio_util.ALL;
 USE work.decoder_utils.ALL;
 
 ENTITY decoder_pms2 IS
@@ -46,7 +46,7 @@ BEGIN
         ) IS
             VARIABLE synd1 : INTEGER;
         BEGIN
-            syndrome(lin => mat(index), synd => synd1);
+            synd1 := syndrome(mat(index));
             FOR i IN mat'RANGE LOOP
                 mat(index)(i) := mat(index)(i) XOR SYNDTABLE(synd1 + 1)(i);
             END LOOP;
@@ -57,8 +57,8 @@ BEGIN
         ) IS
             VARIABLE synd1 : INTEGER;
         BEGIN
-            extract_column(mat => mat, index => index, col => column_temp);
-            syndrome(lin => column_temp, synd => synd1);
+            column_temp := getColumn(mat => mat, index => index);
+            synd1       := syndrome(column_temp);
             FOR i IN mat(0)'RANGE LOOP
                 mat(i)(index) := column_temp(i) XOR SYNDTABLE(synd1 + 1)(i);
             END LOOP;
@@ -76,7 +76,7 @@ BEGIN
                         r3_stat := 0;
                         stat <= R1;
                     WHEN R1 =>
-                        syndrome(lin => code(index), synd => synd);
+                        synd := syndrome(code(index));
                         IF synd /= 0 THEN
                             row_error(row_err_index) := index;
                             row_err_index            := row_err_index + 1;
@@ -89,8 +89,8 @@ BEGIN
                             stat <= R2;
                         END IF;
                     WHEN R2 =>
-                        extract_column(mat => code, index => index, col => column_temp);
-                        syndrome(lin => column_temp, synd => synd);
+                        column_temp := getColumn(mat => code, index => index);
+                        synd        := syndrome(column_temp);
                         IF synd /= 0 THEN
                             col_error(col_err_index) := index;
                             col_err_index            := col_err_index + 1;

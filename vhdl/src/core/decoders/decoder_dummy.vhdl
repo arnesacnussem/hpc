@@ -2,7 +2,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.generated.ALL;
-USE work.utils.ALL;
+USE work.mxio_util.ALL;
 USE work.decoder_utils.ALL;
 
 ENTITY decoder_dummy IS
