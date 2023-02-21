@@ -172,14 +172,13 @@ delete fileTree('.') {
     include 'hs_err_*.log'
 }
 
-task pack(type: Tar) {
+task copyToDist {
     dependsOn elaborate
 
-    archiveName = 'pack.tar.gz'
-    into('/') {
-        from hierarchy.list()
+    doLast {
+        copy {
+            from hierarchy.list()
+            into "${dir.out}/vhdl"
+        }
     }
-
-    destinationDir  file(dir.out)
-    compression = Compression.GZIP
 }
