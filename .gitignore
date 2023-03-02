@@ -1,6 +1,7 @@
 /.vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/settings.json
 *.o
 *.cf
 /node_modules/
