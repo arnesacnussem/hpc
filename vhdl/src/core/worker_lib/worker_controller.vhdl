@@ -77,7 +77,6 @@ BEGIN
             
                 WHEN IDLE =>
                     WorkerMap := (LastLoaded => (-1), LastWorkerUsed => (-1));
-                    internal_mem <= (OTHERS => (OTHERS => '0'));
                     WorkerCtlRst <= '1';
                     State        <= LOAD;
 
