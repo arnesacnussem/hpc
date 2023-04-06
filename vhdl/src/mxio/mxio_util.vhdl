@@ -13,6 +13,8 @@ PACKAGE mxio_util IS
         mat   : MXIO;
         index : INTEGER
     ) RETURN MXIO_ROW;
+
+    TYPE IOMode IS (INPUT, OUTPUT);
 END PACKAGE;
 
 PACKAGE BODY mxio_util IS
