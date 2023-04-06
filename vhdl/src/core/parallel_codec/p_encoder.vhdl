@@ -18,6 +18,8 @@ ENTITY p_encoder IS
 END ENTITY p_encoder;
 
 ARCHITECTURE rtl OF p_encoder IS
+
+    -- Worker controls
     SIGNAL cutoff_pos    : INTEGER := (-1);
     SIGNAL mem_inL       : MXIO(0 TO CODEWORD_LENGTH)(0 TO MSG_LENGTH);
     SIGNAL mem_out       : MXIO(0 TO CODEWORD_LENGTH)(0 TO CODEWORD_LENGTH);
@@ -25,6 +27,7 @@ ARCHITECTURE rtl OF p_encoder IS
     SIGNAL WorkerDisable : STD_LOGIC := '0';
     SIGNAL WorkerInputsR : GEN_MAT   := GENERATE_MATRIX;
 
+    -- FSM
     TYPE StateType IS (IDLE, WAIT_WORKER, MOVE_RESULT_1, PARTIAL_READY, TRANSPOSE, MOVE_RESULT_2, FULL_READY);
     SIGNAL State     : StateType := IDLE;
     SIGNAL nextState : StateType := IDLE;
