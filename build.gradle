@@ -45,10 +45,10 @@ task vhdlGen(type: Exec) {
     workingDir 'scripts'
     String size = '73'
     String chkBits = '3'
-    if (project.hasProperty('vhdlGenSize')) {
+    if (project.hasProperty('vhdlGen_size')) {
         size = vhdlGen_size
     }
-    if (project.hasProperty('vhdlGenChkBits')) {
+    if (project.hasProperty('vhdlGen_chkBits')) {
         chkBits = vhdlGen_chkBits
     }
     commandLine 'python', 'generator.py', size, chkBits, file(dir.gen).absolutePath

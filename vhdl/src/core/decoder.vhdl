@@ -26,8 +26,8 @@ BEGIN
         WHEN DUMMY =>
             -- Generate nothing.
             ASSERT DECODER_TYPE = DUMMY REPORT "this is a dummy decoder for build script to generate code, nothing generated" SEVERITY failure;
-        WHEN PMS2 =>
-            inst : ENTITY work.decoder_pms2
+        WHEN SHPC =>
+            inst : ENTITY work.decoder_shpc
                 PORT MAP(
                     codeIn  => codeIn,
                     msg     => msg,
@@ -36,6 +36,17 @@ BEGIN
                     clk     => clk,
                     has_err => has_err
                 );
+        WHEN EHPC =>
+            inst : ENTITY work.decoder_ehpc
+                PORT MAP(
+                    codeIn  => codeIn,
+                    msg     => msg,
+                    ready   => ready,
+                    rst     => rst,
+                    clk     => clk,
+                    has_err => has_err
+                );
+
         WHEN BAO3 =>
             inst : ENTITY work.decoder_bao3
                 PORT MAP(

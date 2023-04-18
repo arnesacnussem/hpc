@@ -1,4 +1,4 @@
-function [G, H, n, k, table, syndt] = gen84(check_bit)
+function [H, G, n, k, table, syndt] = gen84(check_bit)
     pkg load communications;
 
     % 生成HGNK
