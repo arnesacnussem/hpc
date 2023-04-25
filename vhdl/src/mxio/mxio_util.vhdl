@@ -16,6 +16,7 @@ PACKAGE mxio_util IS
 
     TYPE IOMode IS (INPUT, OUTPUT);
     PROCEDURE TransposeInPosition(mat : INOUT MXIO);
+    PROCEDURE CopyMXIO(a : IN MXIO; b : OUT MXIO);
 END PACKAGE;
 
 PACKAGE BODY mxio_util IS
@@ -69,8 +70,8 @@ PACKAGE BODY mxio_util IS
     PROCEDURE TransposeInPosition(mat : INOUT MXIO) IS
         VARIABLE temp_bit                 : BIT;
     BEGIN
-        FOR i IN 0 TO 6 LOOP
-            FOR j IN i + 1 TO 6 LOOP
+        FOR i IN 0 TO mat'length - 1 LOOP
+            FOR j IN i + 1 TO mat'length(1) - 1 LOOP
                 -- Swap elements (i, j) and (j, i)
                 FOR k IN 0 TO 6 LOOP
                     temp_bit  := mat(i)(k);
@@ -85,4 +86,13 @@ PACKAGE BODY mxio_util IS
             END LOOP;
         END LOOP;
     END TransposeInPosition;
+
+    PROCEDURE CopyMXIO(a : IN MXIO; b : OUT MXIO) IS
+    BEGIN
+        FOR i IN a'RANGE LOOP
+            FOR j IN a(i)'RANGE LOOP
+                b(i)(j) := a(i)(j);
+            END LOOP;
+        END LOOP;
+    END CopyMXIO;
 END PACKAGE BODY;

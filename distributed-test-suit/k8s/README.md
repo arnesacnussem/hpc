@@ -1,0 +1,9 @@
+# Helm Charts Dependencies Used by This Project
+
+- [ray-project/kuberay: A toolkit to run Ray applications on Kubernetes (github.com)](https://github.com/ray-project/kuberay)
+
+- [redis 17.3.11 · bitnami/bitnami (artifacthub.io)](https://artifacthub.io/packages/helm/bitnami/redis)
+    <div class="artifacthub-widget" data-url="https://artifacthub.io/packages/helm/bitnami/redis" data-theme="dark" data-header="true" data-stars="true" data-responsive="true"><blockquote><p lang="en" dir="ltr"><b>redis</b>: Redis(R) is an open source, advanced key-value store. It is often referred to as a data structure server since keys can contain strings, hashes, lists, sets and sorted sets.</p>&mdash; Open in <a href="https://artifacthub.io/packages/helm/bitnami/redis">Artifact Hub</a></blockquote></div><script async src="https://artifacthub.io/artifacthub-widget.js"></script>
+    
+- [kube-prometheus-stack 42.1.0 · prometheus/prometheus-community (artifacthub.io)](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)
+    <div class="artifacthub-widget" data-url="https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack" data-theme="dark" data-header="true" data-stars="true" data-responsive="true"><blockquote><p lang="en" dir="ltr"><b>kube-prometheus-stack</b>: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards, and Prometheus rules combined with documentation and scripts to provide easy to operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus Operator.</p>&mdash; Open in <a href="https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack">Artifact Hub</a></blockquote></div><script async src="https://artifacthub.io/artifacthub-widget.js"></script>

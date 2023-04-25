@@ -35,12 +35,15 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
     %Compare_vector = [row1_vector;row_uncorrect;col_uncorrect;col1_vector];
     if sum(col1_vector + col_uncorrect) > sum(row1_vector + row_uncorrect) || length(find(col1_vector ~= 0)) > length(find(row1_vector ~= 0))
+        % CHK_SET_FLAG
         rec = rec';
         flag = 1;
     end
 
+
     if flag == 1
         % 进行擦除 sum_vec_1 == sum_vec_2
+        % CHK_CRFLAG
         if sum(col1_vector + col_uncorrect) == sum(row1_vector + row_uncorrect) && length(find(col1_vector ~= 0)) == length(find(row1_vector ~= 0))
 
             %擦除区域内的错误个数大于一半以上
@@ -50,6 +53,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
                 rr = find(row1_vector ~= 0);
                 cc = find(col1_vector ~= 0);
 
+                % CHK_CRLOOP
                 for i = 1:s2
 
                     for j = 1:s1
