@@ -1,7 +1,8 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_bit.ALL;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 USE work.core_util.ALL;
 USE work.decoder_utils.ALL;
 

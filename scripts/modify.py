@@ -42,12 +42,13 @@ def copy_and_modify_file(abs_in: str, abs_out: str, _old: str, _new: str):
 
 def modify(fIn: str, fOut: str, replace: str, hlist: str):
     abs_in, abs_out = get_abspath(fIn, fOut)
+    out_file = f"{abs_out}/{os.path.basename(abs_in)}"
     print(f"Modifing '{abs_in}' with replacement of '{replace}',\
-         result write to '{abs_out}'",
+         result write to '{out_file}'",
           file=sys.stderr)
-    copy_and_modify_file(abs_in, abs_out,
+    copy_and_modify_file(abs_in, out_file,
                          "DUMMY", replace.upper())
-    modify_hierarchy_list(abs_in, abs_out, hlist)
+    modify_hierarchy_list(abs_in, out_file, hlist)
     print("...ok", file=sys.stderr)
 
 

@@ -1,7 +1,8 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 USE work.mxio_util.ALL;
 
 PACKAGE core_util IS

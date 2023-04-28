@@ -2,7 +2,8 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.math_real.ALL;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 
 PACKAGE mxio_util IS
     FUNCTION bitToChar(b            : BIT) RETURN CHARACTER;
@@ -15,7 +16,8 @@ PACKAGE mxio_util IS
     ) RETURN MXIO_ROW;
 
     TYPE IOMode IS (INPUT, OUTPUT);
-    PROCEDURE TransposeInPosition(mat : INOUT MXIO);
+    PROCEDURE TransposeInPositionVAR(mat        : INOUT MXIO);
+    PROCEDURE TransposeInPositionSIG(SIGNAL mat : INOUT MXIO);
     PROCEDURE CopyMXIO(a : IN MXIO; b : OUT MXIO);
 END PACKAGE;
 
@@ -67,8 +69,8 @@ PACKAGE BODY mxio_util IS
         END LOOP;
         RETURN col;
     END FUNCTION;
-    PROCEDURE TransposeInPosition(mat : INOUT MXIO) IS
-        VARIABLE temp_bit                 : BIT;
+    PROCEDURE TransposeInPositionVAR(mat : INOUT MXIO) IS
+        VARIABLE temp_bit                    : BIT;
     BEGIN
         FOR i IN 0 TO mat'length - 1 LOOP
             FOR j IN i + 1 TO mat'length(1) - 1 LOOP
@@ -85,7 +87,26 @@ PACKAGE BODY mxio_util IS
                 END LOOP;
             END LOOP;
         END LOOP;
-    END TransposeInPosition;
+    END TransposeInPositionVAR;
+    PROCEDURE TransposeInPositionSIG(SIGNAL mat : INOUT MXIO) IS
+        VARIABLE temp_bit                           : BIT;
+    BEGIN
+        FOR i IN 0 TO mat'length - 1 LOOP
+            FOR j IN i + 1 TO mat'length(1) - 1 LOOP
+                -- Swap elements (i, j) and (j, i)
+                FOR k IN 0 TO 6 LOOP
+                    temp_bit  := mat(i)(k);
+                    mat(i)(k) <= mat(j)(k);
+                    mat(j)(k) <= temp_bit;
+                END LOOP;
+                FOR k IN 0 TO 6 LOOP
+                    temp_bit  := mat(k)(i);
+                    mat(k)(i) <= mat(k)(j);
+                    mat(k)(j) <= temp_bit;
+                END LOOP;
+            END LOOP;
+        END LOOP;
+    END TransposeInPositionSIG;
 
     PROCEDURE CopyMXIO(a : IN MXIO; b : OUT MXIO) IS
     BEGIN

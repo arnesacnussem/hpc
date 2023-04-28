@@ -1,7 +1,8 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_bit.ALL;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 
 -- 并行计算组件，计算 mInL * mInR => mOUT
 -- act置高则为开始计算，stat高则为计算完成

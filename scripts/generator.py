@@ -32,16 +32,27 @@ table = {np.shape(table)}
 syndt = {np.shape(syndt)}
 """
 
-header = """
+
+def header(pkg):
+    return f"""
 library ieee;
 USE ieee.std_logic_1164.ALL;
 
-PACKAGE generated IS
+PACKAGE {pkg} IS
 
 """
-footer = """
-END PACKAGE generated;
+
+
+def footer(pkg):
+    return f"""
+END PACKAGE {pkg};
 """
+
+
+def headerAndFooter(pkg):
+    return header(pkg), footer(pkg)
+
+
 shapeH = np.shape(H)
 shapeSyndT = np.shape(syndt)
 types = f"""
@@ -69,7 +80,7 @@ def mat2VHDstr(mat):
     )
 
 
-configs = f"""
+constants = f"""
     CONSTANT MSG_LENGTH : INTEGER := {k - 1};
     CONSTANT CODEWORD_LENGTH : INTEGER := {n - 1};
     CONSTANT CHECK_LENGTH    : INTEGER := {shapeH[1] - 1};
@@ -97,7 +108,8 @@ test_message = np.vectorize(
 
 test_data = f"""
 library ieee;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 PACKAGE test_data IS
     CONSTANT MESSAGE_MATRIX : MSG_MAT := (
         {mat2VHDstr(test_message)}
@@ -115,6 +127,9 @@ if not os.path.isdir(f"{output_dir}"):
     os.mkdir(f"{output_dir}")
 
 
-open(f"{output_dir}/generated.vhdl", "w+"
-     ).write(header + types + configs + footer)
+open(f"{output_dir}/constants.vhdl", "w+"
+     ).write(header("constants") + "\nUSE work.types.ALL;\n" + constants + footer("constants"))
+
+open(f"{output_dir}/types.vhdl", "w+"
+     ).write(header("types") + types + footer("types"))
 open(f"{output_dir}/test_data.vhdl", "w+").write(test_data)

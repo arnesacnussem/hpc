@@ -1,7 +1,8 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_bit.ALL;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 USE work.mxio_util.ALL;
 
 ENTITY encoder IS
@@ -80,8 +81,8 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
-                        REPORT LF & "[ENC] message" & LF & MXIO_toString(msg);
-                        REPORT LF & "[ENC] codeword" & LF & MXIO_toString(codeword);
+                        REPORT LF & "[ENC] message=" & LF & MXIO_toString(msg);
+                        REPORT LF & "[ENC] codeword=" & LF & MXIO_toString(codeword);
                     WHEN OTHERS =>
                 END CASE;
             END IF;

@@ -79,7 +79,7 @@ task hierarchy(type: NodeTask) {
     }
     doLast {
         exec {
-            commandLine 'python', "${dir.scripts}/modify.py", "${dir.src}/test/testbenchs/decoder_tb.vhdl", "${dir.out}/modify.vhdl", modify_replace, '-'
+            commandLine 'python', "${dir.scripts}/modify.py", "${dir.src}/test/testbenchs/decoder_tb.vhdl", dir.out, modify_replace, '-'
             errorOutput = System.err
             standardOutput = output2
             standardInput = new ByteArrayInputStream(output.toString().bytes)
@@ -135,7 +135,7 @@ task run {
     doLast {
         exec {
             workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--stop-time=10ns'].flatten()
+            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--vcd=wave.vcd'].flatten()
         }
     }
 }
@@ -179,6 +179,28 @@ task copyToDist {
         copy {
             from hierarchy.list()
             into "${dir.out}/vhdl"
+        }
+    }
+}
+
+task tar {
+    dependsOn copyToDist
+    doLast {
+        ant.tar(destfile: "${ghdl.workDir}/dist.tgz",
+            basedir: "${ghdl.workDir}/vhdl", compression:'gzip')
+    }
+}
+
+task graphvizDot {
+    group 'build:ghdl'
+    description 'Create a graphviz DOT file for the top level'
+    dependsOn run
+
+    doLast {
+        exec {
+            def ghdlCmd = [ghdl.exec, ghdl.args, hierarchy.list(), '-e', 'decoder_shpc'].flatten().join(' ')
+            workingDir = ghdl.workDir
+            commandLine 'yosys', '-m', 'ghdl', '-p', "$ghdlCmd; synth_intel_alm; show -stretch -nobg -prefix ${ghdl.workDir}"
         }
     }
 }
