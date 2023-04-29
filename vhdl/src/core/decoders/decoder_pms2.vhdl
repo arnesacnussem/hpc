@@ -175,9 +175,9 @@ BEGIN
                     WHEN RDY =>
                         ready <= '1';
                         msg   <= message;
-                        REPORT LF & "[DEC/MAJ2] codeIn=" & LF & MXIO_toString(codeIn);
-                        REPORT LF & "[DEC/MAJ2] corr=" & LF & MXIO_toString(code);
-                        REPORT LF & "[DEC/MAJ2] msg=" & LF & MXIO_toString(message);
+                        REPORT LF & "[DEC/MAJ2] codeIn=" & LF & MXIO_toHexString(codeIn);
+                        REPORT LF & "[DEC/MAJ2] corr=" & LF & MXIO_toHexString(code);
+                        REPORT LF & "[DEC/MAJ2] msg=" & LF & MXIO_toHexString(message);
                     WHEN OTHERS =>
                 END CASE;
             END IF;

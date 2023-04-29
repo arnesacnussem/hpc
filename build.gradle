@@ -177,7 +177,7 @@ task copyToDist {
 
     doLast {
         copy {
-            from hierarchy.list()
+            from hierarchy.list(), 'out/build.txt'
             into "${dir.out}/vhdl"
         }
     }

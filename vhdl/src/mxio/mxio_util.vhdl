@@ -6,9 +6,9 @@ USE work.types.ALL;
 USE work.constants.ALL;
 
 PACKAGE mxio_util IS
-    FUNCTION bitToChar(b            : BIT) RETURN CHARACTER;
-    FUNCTION MXIOROW_toString (bVec : MXIO_ROW) RETURN STRING;
-    FUNCTION MXIO_toString (mx      : MXIO) RETURN STRING;
+    FUNCTION bitToChar(b                 : BIT) RETURN CHARACTER;
+    FUNCTION MXIO_toString (input_mxio   : MXIO) RETURN STRING;
+    FUNCTION MXIO_toHexString(input_mxio : MXIO) RETURN STRING;
 
     FUNCTION getColumn (
         mat   : MXIO;
@@ -32,30 +32,68 @@ PACKAGE BODY mxio_util IS
         END IF;
     END FUNCTION;
 
-    FUNCTION MXIOROW_toString (bVec : MXIO_ROW) RETURN STRING IS
-        VARIABLE li                     : STRING(0 TO bVec'length * 2);
+    FUNCTION MXIO_toString(input_mxio : MXIO) RETURN STRING IS
+        VARIABLE result                   : STRING(1 TO input_mxio'length * (input_mxio(1)'length + 1));
+        VARIABLE index                    : NATURAL := 1;
     BEGIN
-        FOR i IN bVec'RANGE LOOP
-            li(i * 2 TO i * 2 + 1) := bitToChar(bVec(i)) & ' ';
+        FOR i IN input_mxio'RANGE LOOP
+            FOR j IN input_mxio(i)'RANGE LOOP
+                result(index) := bitToChar(input_mxio(i)(j));
+                index         := index + 1;
+            END LOOP;
+            result(index) := CHARACTER'val(10); -- add line feed
+            index         := index + 1;
         END LOOP;
-        RETURN li;
-    END FUNCTION;
+        RETURN result(1 TO index - 1);
+    END MXIO_toString;
 
-    FUNCTION MXIO_toString (mx : MXIO) RETURN STRING IS
-        -- length: col*row + row*8 +2
-        -- line length: col + 8 => 3 line num, 1 LF
-        VARIABLE li : STRING(0 TO (mx'length * (mx(0)'length * 2 + 2))) := (OTHERS => NUL);
-
-        -- LF is 2 char =_=
-        CONSTANT len   : NATURAL := mx(0)'length * 2 + 2;
-        VARIABLE index : NATURAL := 0;
+    FUNCTION halfByteToChar(input_val : IN bit_vector(0 TO 3)) RETURN CHARACTER IS
     BEGIN
-        FOR row IN mx'RANGE LOOP
-            li(row * len TO (row + 1) * len - 1) := MXIOROW_toString(mx(row)) & LF;
-            index                                := index + len + 1;
+        CASE input_val IS
+            WHEN "0000" => RETURN '0';
+            WHEN "0001" => RETURN '1';
+            WHEN "0010" => RETURN '2';
+            WHEN "0011" => RETURN '3';
+            WHEN "0100" => RETURN '4';
+            WHEN "0101" => RETURN '5';
+            WHEN "0110" => RETURN '6';
+            WHEN "0111" => RETURN '7';
+            WHEN "1000" => RETURN '8';
+            WHEN "1001" => RETURN '9';
+            WHEN "1010" => RETURN 'A';
+            WHEN "1011" => RETURN 'B';
+            WHEN "1100" => RETURN 'C';
+            WHEN "1101" => RETURN 'D';
+            WHEN "1110" => RETURN 'E';
+            WHEN "1111" => RETURN 'F';
+        END CASE;
+    END halfByteToChar;
+
+    FUNCTION mxio_row_to_hex(val : IN MXIO_ROW) RETURN STRING IS
+        CONSTANT length              : INTEGER := ((val'length + 3) / 4) * 4;
+        VARIABLE result              : STRING(1 TO length/4);
+        VARIABLE padded              : BIT_VECTOR(0 TO length - 1) := (OTHERS => '0');
+    BEGIN
+        -- Copy the input value into the end of the padded
+        padded(length - val'length TO length - 1) := val(val'RANGE);
+        FOR i IN result'RANGE LOOP
+            result(i) := halfByteToChar(padded((i - 1) * 4 TO i * 4 - 1));
+
         END LOOP;
-        RETURN li;
-    END FUNCTION;
+        RETURN result;
+    END;
+
+    FUNCTION MXIO_toHexString(input_mxio : MXIO) RETURN STRING IS
+        CONSTANT row_length                  : INTEGER := 1 + (input_mxio'length(1) + 3) / 4;
+        CONSTANT str_length                  : INTEGER := row_length * input_mxio'length;
+        VARIABLE result                      : STRING(1 TO str_length);
+        VARIABLE row                         : STRING(1 TO row_length);
+    BEGIN
+        FOR i IN input_mxio'RANGE LOOP
+            result(i * row_length + 1 TO (i + 1) * row_length) := mxio_row_to_hex(input_mxio(i)) & ' ';
+        END LOOP;
+        RETURN result;
+    END MXIO_toHexString;
 
     FUNCTION getColumn (
         mat   : MXIO;
@@ -95,12 +133,12 @@ PACKAGE BODY mxio_util IS
             FOR j IN i + 1 TO mat'length(1) - 1 LOOP
                 -- Swap elements (i, j) and (j, i)
                 FOR k IN 0 TO 6 LOOP
-                    temp_bit  := mat(i)(k);
+                    temp_bit := mat(i)(k);
                     mat(i)(k) <= mat(j)(k);
                     mat(j)(k) <= temp_bit;
                 END LOOP;
                 FOR k IN 0 TO 6 LOOP
-                    temp_bit  := mat(k)(i);
+                    temp_bit := mat(k)(i);
                     mat(k)(i) <= mat(k)(j);
                     mat(k)(j) <= temp_bit;
                 END LOOP;
