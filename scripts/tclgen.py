@@ -15,16 +15,18 @@ with open(args.output_file, 'w') as f:
     for source in sources:
         f.write('vcom -work work -2008 "{}"\n'.format(os.path.basename(source)))
 
-    f.write('\n# Load testbench source\n')
-    f.write('vcom -work work -2008 "{}"\n'.format(args.testbench))
+    f.write(f'''
+    
+    # Load testbench source
+    vcom -work work -2008 "{args.testbench}"
 
-    f.write('\n# Elaborate design\n')
-    f.write('vsim -L work -L secureip -t 1ps -voptargs="+acc" work.{}\n'.format(args.testbench.split('.vhdl')[0]))
+    # Elaborate design
+    vsim -L work -L secureip -t 1ps -voptargs="+acc" work.{args.testbench.split('.vhdl')[0]}
+    log -r *
+    add wave *
+    # Run simulation
+    run -all
+    add wave *
+    wave zoom full
+    ''')
 
-    f.write('\n# Run simulation\n')
-    f.write('run -all\n')
-
-    f.write('\n# Save waveform\n')
-    f.write('vcd file {}.vcd\n'.format(args.testbench.split('.vhdl')[0]))
-    f.write('add wave *\n')
-    f.write('wave zoom full\n')

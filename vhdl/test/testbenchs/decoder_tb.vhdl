@@ -37,7 +37,7 @@ BEGIN
 
     RandomBitFlipper_inst : ENTITY work.RandomBitFlipper
         GENERIC MAP(
-            FLIP_COUNT => 7
+            FLIP_COUNT => 5
         )
         PORT MAP(
             enable => enableRBF,
@@ -81,20 +81,21 @@ BEGIN
         clk_c <= "10";
         WAIT UNTIL ready(0) = '1';
 
+        clk_c <= "00";
         WAIT UNTIL rising_edge(clk);
         -- modify the codeword
         enableRBF <= '1';
-
         WAIT UNTIL rising_edge(clk);
+
         clk_c <= "01";
-
         WAIT UNTIL ready = "11";
+
         clk_c <= "00";
-
         WAIT UNTIL rising_edge(clk);
+
         rst(1) <= '1';
-
         WAIT UNTIL rising_edge(clk);
+        
         exit1 <= true;
         WAIT;
     END PROCESS;

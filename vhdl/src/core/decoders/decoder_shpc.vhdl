@@ -13,28 +13,26 @@ ENTITY decoder_shpc IS
         ready   : OUT STD_LOGIC := '0'; -- signal of work ready
         rst     : IN STD_LOGIC;         -- reset ready status and clock of work
         clk     : IN STD_LOGIC;         -- clock
-        has_err : OUT STD_LOGIC
+        has_err : OUT STD_LOGIC := '0'
     );
 END ENTITY decoder_shpc;
 
 ARCHITECTURE rtl OF decoder_shpc IS
     TYPE state_t IS (COPY, CHK_ROW, CHK_COLUMN, R3, EXTRACT, RDY);
-    SIGNAL stat : state_t := COPY;
+    SIGNAL stat    : state_t := COPY;
+    SIGNAL code    : CODEWORD_MAT;
+    SIGNAL col_vec : CODEWORD_LINE;
+    SIGNAL row_vec : CODEWORD_LINE;
 BEGIN
 
     PROCESS (clk)
-        VARIABLE err_exist : BOOLEAN;
         VARIABLE err_pos   : INTEGER;
+        VARIABLE err_exist : BOOLEAN;
 
-        VARIABLE col_vec : CODEWORD_LINE;
-        VARIABLE row_vec : CODEWORD_LINE;
+        VARIABLE index     : NATURAL := 0;
+        VARIABLE code_line : CODEWORD_LINE;
 
-        VARIABLE code    : CODEWORD_MAT;
         VARIABLE message : MSG_MAT;
-        -- FIXME: 这个提取行好像搞得太复杂了
-        VARIABLE column_temp : CODEWORD_LINE;
-
-        VARIABLE index : NATURAL := 0;
     BEGIN
         IF rising_edge(clk) THEN
             IF rst = '1' THEN
@@ -44,16 +42,17 @@ BEGIN
             ELSE
                 CASE stat IS
                     WHEN COPY =>
-                        code := codeIn;
+                        code <= codeIn;
                         stat <= CHK_ROW;
                     WHEN CHK_ROW =>
-                        line_decode(code(index), err_exist, err_pos);
+                        code_line := code(index);
+                        line_decode(code_line, err_exist, err_pos);
                         IF err_exist THEN
                             has_err <= '1';
                             REPORT "[DEC/SHPC] found error: row=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
-                            row_vec(index) := '1';
+                            row_vec(index) <= '1';
                             IF err_pos >= 0 THEN
-                                code(index)(err_pos) := NOT code(index)(err_pos);
+                                code(index)(err_pos) <= NOT code(index)(err_pos);
                             END IF;
                         END IF;
 
@@ -65,19 +64,19 @@ BEGIN
                         END IF;
 
                     WHEN CHK_COLUMN =>
-                        column_temp := getColumn(mat => code, index => index);
-                        line_decode(column_temp, err_exist, err_pos);
+                        code_line:= getColumn(mat => code, index => index);
+                        line_decode(code_line, err_exist, err_pos);
 
                         IF err_exist THEN
                             REPORT "[DEC/SHPC]: col=" & INTEGER'image(index) & " err_pos=" & INTEGER'image(err_pos);
                             has_err <= '1';
                             IF err_pos >= 0 THEN
-                                code(err_pos)(index) := NOT code(err_pos)(index);
+                                code(err_pos)(index) <= NOT code(err_pos)(index);
                                 IF row_vec(err_pos) = '0' THEN
-                                    col_vec(index) := '1';
+                                    col_vec(index) <= '1';
                                 END IF;
                             ELSE
-                                col_vec(index) := '1';
+                                col_vec(index) <= '1';
                             END IF;
                         END IF;
 
@@ -89,15 +88,16 @@ BEGIN
                             stat <= R3;
                         END IF;
                     WHEN R3 =>
-                        line_decode(code(index), err_exist, err_pos);
+                        code_line := code(index);
+                        line_decode(code_line, err_exist, err_pos);
                         IF err_exist THEN
                             has_err <= '1';
                             IF err_pos >= 0 THEN
-                                code(index)(err_pos) := NOT code(index)(err_pos);
+                                code(index)(err_pos) <= NOT code(index)(err_pos);
                             ELSE
                                 FOR col IN CODEWORD_LINE'RANGE LOOP
                                     IF col_vec(col) = '1' THEN
-                                        code(index)(col) := NOT code(index)(col);
+                                        code(index)(col) <= NOT code(index)(col);
                                     END IF;
                                 END LOOP;
                             END IF;

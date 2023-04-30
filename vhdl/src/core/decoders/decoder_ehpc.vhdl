@@ -32,10 +32,8 @@ ARCHITECTURE rtl OF decoder_ehpc IS
 BEGIN
 
     PROCESS (clk)
-
         VARIABLE err_exist : BOOLEAN;
         VARIABLE err_pos   : INTEGER;
-        -- FIXME: 这个提取行好像搞得太复杂了
         VARIABLE code_line : CODEWORD_LINE;
 
         VARIABLE index : NATURAL := 0;
@@ -267,7 +265,6 @@ BEGIN
                         msg   <= message;
                         REPORT LF & "[DEC/EHPC] codeIn=" & LF & MXIO_toHexString(codeIn);
                         REPORT LF & "[DEC/EHPC] corr=" & LF & MXIO_toHexString(code);
-                        REPORT LF & "[DEC/EHPC] msg=" & LF & MXIO_toHexString(message);
                     WHEN OTHERS =>
                 END CASE;
             END IF;

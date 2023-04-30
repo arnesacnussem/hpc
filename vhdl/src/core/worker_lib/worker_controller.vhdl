@@ -66,7 +66,7 @@ BEGIN
             END LOOP;
 
             -- return true if all data has been loaded
-            RETURN WorkerMap.LastLoaded = mem_inL'RANGE'high OR WorkerMap.LastLoaded = cutoff_pos;
+            RETURN WorkerMap.LastLoaded = mem_inL'high OR WorkerMap.LastLoaded = cutoff_pos;
         END FUNCTION;
 
     BEGIN
