@@ -8,11 +8,11 @@ USE work.decoder_utils.ALL;
 
 ENTITY decoder_ehpc IS
     PORT (
-        codeIn  : IN CODEWORD_MAT;      -- codeword matrix
-        msg     : OUT MSG_MAT;          -- message matrix
-        ready   : OUT STD_LOGIC := '0'; -- signal of work ready
-        rst     : IN STD_LOGIC;         -- reset ready status and clock of work
-        clk     : IN STD_LOGIC;         -- clock
+        codeIn : IN CODEWORD_MAT; -- codeword matrix
+        msg : OUT MSG_MAT; -- message matrix
+        ready : OUT STD_LOGIC := '0'; -- signal of work ready
+        rst : IN STD_LOGIC; -- reset ready status and clock of work
+        clk : IN STD_LOGIC; -- clock
         has_err : OUT STD_LOGIC := '0'
     );
 END ENTITY decoder_ehpc;
@@ -20,20 +20,20 @@ END ENTITY decoder_ehpc;
 ARCHITECTURE rtl OF decoder_ehpc IS
     TYPE int_array IS ARRAY (NATURAL RANGE <>) OF INTEGER;
     TYPE stat_t IS (COPY, CHK_R1, CHK_C1, CHK_SET_FLAG, CHK_CRFLAG, CHK_CRLOOP, RST_CRVEC, CHK_R2, CHK_C2, CHK_CR2_SUM, CHK_CR2_LOOP_1, CHK_CR2_LOOP_2, CHK_CR2_LOOP_2S, CHK_R3, CHK_C3, CHK_REQ, CHK_FLAG, EXTRACT, RDY);
-    SIGNAL stat          : stat_t                      := COPY;
-    SIGNAL row_vector    : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
-    SIGNAL col_vector    : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
-    SIGNAL row_uncorrect : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL stat : stat_t := COPY;
+    SIGNAL row_vector : bit_vector(codeIn'RANGE) := (OTHERS => '0');
+    SIGNAL col_vector : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
+    SIGNAL row_uncorrect : bit_vector(codeIn'RANGE) := (OTHERS => '0');
     SIGNAL col_uncorrect : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
-    SIGNAL col_err_pos   : int_array(codeIn'RANGE(1))  := (OTHERS => 0);
-    SIGNAL transposeFlag : BOOLEAN                     := false;
-    SIGNAL code          : CODEWORD_MAT;
-    SIGNAL message       : MSG_MAT;
+    SIGNAL col_err_pos : int_array(codeIn'RANGE(1)) := (OTHERS => 0);
+    SIGNAL transposeFlag : BOOLEAN := false;
+    SIGNAL code : CODEWORD_MAT;
+    SIGNAL message : MSG_MAT;
 BEGIN
 
     PROCESS (clk)
         VARIABLE err_exist : BOOLEAN;
-        VARIABLE err_pos   : INTEGER;
+        VARIABLE err_pos : INTEGER;
         VARIABLE code_line : CODEWORD_LINE;
 
         VARIABLE index : NATURAL := 0;
@@ -64,8 +64,8 @@ BEGIN
 
         VARIABLE col_count : INTEGER := 0;
         VARIABLE row_count : INTEGER := 0;
-        VARIABLE col_sum   : INTEGER := 0;
-        VARIABLE row_sum   : INTEGER := 0;
+        VARIABLE col_sum : INTEGER := 0;
+        VARIABLE row_sum : INTEGER := 0;
 
         PROCEDURE UpdateCountSum IS
         BEGIN
@@ -85,9 +85,9 @@ BEGIN
     BEGIN
         IF rising_edge(clk) THEN
             IF rst = '1' THEN
-                msg   <= (OTHERS => MXIO_ROW(ieee.numeric_bit.to_unsigned(0, msg(0)'length)));
+                msg <= (OTHERS => MXIO_ROW(ieee.numeric_bit.to_unsigned(0, msg(0)'length)));
                 ready <= '0';
-                stat  <= COPY;
+                stat <= COPY;
             ELSE
                 CASE stat IS
                     WHEN COPY =>
@@ -126,6 +126,7 @@ BEGIN
                         IF col_count > row_count OR col_sum > row_sum THEN
                             transposeFlag <= true;
                             TransposeInPositionSIG(code);
+                            stat <= RST_CRVEC;
                         END IF;
                         stat <= CHK_CRFLAG;
                     WHEN CHK_CRFLAG =>
@@ -144,12 +145,12 @@ BEGIN
                             END LOOP;
                         END LOOP;
                         stat <= RST_CRVEC;
-                    WHEN RST_CRVEC           =>
-                        row_vector    <= (OTHERS => '0');
-                        col_vector    <= (OTHERS => '0');
+                    WHEN RST_CRVEC =>
+                        row_vector <= (OTHERS => '0');
+                        col_vector <= (OTHERS => '0');
                         row_uncorrect <= (OTHERS => '0');
                         col_uncorrect <= (OTHERS => '0');
-                        stat          <= CHK_R2;
+                        stat <= CHK_R2;
                     WHEN CHK_R2 =>
                         code_line := code(index);
                         line_decode(code_line, err_exist, err_pos);
@@ -243,7 +244,7 @@ BEGIN
                         line_decode(code_line, err_exist, err_pos);
                         IF err_exist THEN
                             has_err <= '1';
-                            stat    <= CHK_FLAG;
+                            stat <= CHK_FLAG;
                         END IF;
                         IF nextIndex(code'length(1)) THEN
                             stat <= CHK_FLAG;
@@ -262,7 +263,7 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
-                        msg   <= message;
+                        msg <= message;
                         REPORT LF & "[DEC/EHPC] codeIn=" & LF & MXIO_toHexString(codeIn);
                         REPORT LF & "[DEC/EHPC] corr=" & LF & MXIO_toHexString(code);
                     WHEN OTHERS =>

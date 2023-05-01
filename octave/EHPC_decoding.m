@@ -41,7 +41,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
     end
 
 
-    if flag == 1
+    if flag ~= 1
         % 进行擦除 sum_vec_1 == sum_vec_2
         % CHK_CRFLAG
         if sum(col1_vector + col_uncorrect) == sum(row1_vector + row_uncorrect) && length(find(col1_vector ~= 0)) == length(find(row1_vector ~= 0))
