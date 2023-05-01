@@ -1,9 +1,9 @@
-name: Build and upload APK to pre-release
+name: Build and release
 
 on:
   push:
     branches:
-      - master
+      - main
 
 permissions:
   contents: write
