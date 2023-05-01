@@ -1,0 +1,38 @@
+name: Build and upload APK to pre-release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: microsoft
+          cache: 'gradle'
+
+      - name: Build SHPC
+        run: ./build shpc -- tar
+      - name: Build EHPC
+        run: ./build ehpc -- tar
+      - name: Build BAO3
+        run: ./build bao3 -- tar
+
+      - name: Create pre-release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            out/src-*.tgz
+          release_name: Release

@@ -53,6 +53,7 @@ pArg = {
     "ghdl_topLevel": args.top,
     'modify_replace': args.alg.upper(),
     "waveform_type": args.waveform,
+    "decoder_algorithm":args.alg
 }
 pArg_list = [
     f'-P{name}={pArg[name]}' for name in dict.keys(pArg)]
