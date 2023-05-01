@@ -9,6 +9,9 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
     col_error_site = zeros(1, c); % record the location of the column that has estimated.
     flag = 0;
     % check the error
+
+    %CHK_CR1
+
     % CHK_R1
     for i = 1:r
         rrec = rec(i, :);
@@ -30,7 +33,6 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
             col_uncorrect(j) = 1 - cCorrectable;
             col1_vector(j) = 1;
         end
-
     end
 
     %Compare_vector = [row1_vector;row_uncorrect;col_uncorrect;col1_vector];

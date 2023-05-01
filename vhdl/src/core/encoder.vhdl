@@ -81,8 +81,8 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
-                        REPORT LF & "[ENC] message=" & LF & MXIO_toHexString(msg);
-                        REPORT LF & "[ENC] codeword=" & LF & MXIO_toHexString(codeword);
+                        REPORT LF & "[ENC] message=" & LF & MXIO_toString(msg);
+                        REPORT LF & "[ENC] codeword=" & LF & MXIO_toString(codeword);
                     WHEN OTHERS =>
                 END CASE;
             END IF;

@@ -176,6 +176,7 @@ task copyToDist {
     dependsOn elaborate
 
     doLast {
+        delete "${dir.out}/vhdl"
         copy {
             from hierarchy.list(), 'out/build.txt'
             into "${dir.out}/vhdl"
@@ -186,7 +187,7 @@ task copyToDist {
 task tar {
     dependsOn copyToDist
     doLast {
-        ant.tar(destfile: "${ghdl.workDir}/dist.tgz",
+        ant.tar(destfile: "${ghdl.workDir}/src-${decoder_algorithm}.tgz",
             basedir: "${ghdl.workDir}/vhdl", compression:'gzip')
     }
 }
