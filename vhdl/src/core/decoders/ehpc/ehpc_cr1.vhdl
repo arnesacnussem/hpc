@@ -8,10 +8,10 @@ USE work.decoder_utils.ALL;
 
 ENTITY ehpc_cr1 IS
     PORT (
-        clk   : IN STD_LOGIC;
-        reset : IN STD_LOGIC;
-        rec   : IN CODEWORD_MAT;
-        rdy   : OUT STD_LOGIC;
+        enable : IN STD_LOGIC;
+        reset  : IN STD_LOGIC;
+        rec    : IN CODEWORD_MAT;
+        rdy    : OUT STD_LOGIC;
 
         row_vector    : OUT bit_vector(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
         col_vector    : OUT bit_vector(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
@@ -21,19 +21,18 @@ ENTITY ehpc_cr1 IS
 END ENTITY;
 
 ARCHITECTURE rtl OF ehpc_cr1 IS
-    SIGNAL enable  : BOOLEAN                        := false;
     SIGNAL col_rdy : STD_LOGIC_VECTOR(rec'RANGE(1)) := (OTHERS => '0');
     SIGNAL row_rdy : STD_LOGIC_VECTOR(rec'RANGE)    := (OTHERS => '0');
 BEGIN
     row_chk : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
-        row_chk_proc : PROCESS (clk, reset)
+        row_chk_proc : PROCESS (enable, reset)
             VARIABLE code_line : CODEWORD_LINE;
             VARIABLE err_exist : BOOLEAN;
             VARIABLE err_pos   : INTEGER;
         BEGIN
             IF reset = '1' THEN
                 row_rdy(i) <= '0';
-            ELSIF rising_edge(clk) THEN
+            ELSIF rising_edge(enable) THEN
                 code_line := rec(i);
                 line_decode(code_line, err_exist, err_pos);
                 IF err_exist THEN
@@ -48,14 +47,14 @@ BEGIN
     END GENERATE;
 
     col_chk : FOR i IN 0 TO 0 GENERATE
-        col_chk_proc : PROCESS (clk, reset)
+        col_chk_proc : PROCESS (enable, reset)
             VARIABLE code_line : CODEWORD_LINE;
             VARIABLE err_exist : BOOLEAN;
             VARIABLE err_pos   : INTEGER;
         BEGIN
             IF reset = '1' THEN
                 col_rdy(i) <= '0';
-            ELSIF rising_edge(clk) THEN
+            ELSIF rising_edge(enable) THEN
                 code_line := getColumn(rec, i);
                 line_decode(code_line, err_exist, err_pos);
                 IF err_exist THEN

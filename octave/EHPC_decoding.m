@@ -57,13 +57,10 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
                 % CHK_CRLOOP
                 for i = 1:s2
-
                     for j = 1:s1
                         rec(rr(i), cc(j)) = 1 - rec(rr(i), cc(j));
                     end
-
                 end
-
             end
 
         end
