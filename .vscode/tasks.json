@@ -23,9 +23,6 @@
           "beginsPattern": "^\\[nodemon\\] starting .*",
           "endsPattern": "^\\[nodemon\\] ((clean exit)|(app crashed)) .*"
         }
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
       }
     }
   ]
