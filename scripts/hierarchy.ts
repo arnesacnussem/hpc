@@ -150,6 +150,11 @@ const filterDependencies = (list: VHDLFile[], top: VHDLFile | undefined) => {
 
     visited.add(name);
     const vFile = dict[name];
+    if (!vFile) {
+      throw Error(
+        `Unable to find ${pkg ? "package" : "entity"} with name "${name}"`
+      );
+    }
     callback(vFile);
 
     for (const dep of pkg ? vFile.packageDeps : vFile.entityDeps) {

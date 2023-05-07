@@ -1,7 +1,8 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
-USE work.generated.ALL;
+USE work.types.ALL;
+USE work.constants.ALL;
 USE work.mxio_util.ALL;
 USE work.decoder_utils.ALL;
 
@@ -124,7 +125,7 @@ BEGIN
                         UpdateCountSum;
                         IF col_count > row_count OR col_sum > row_sum THEN
                             transposeFlag := true;
-                            TransposeInPosition(code);
+                            TransposeInPositionVAR(code);
                         END IF;
                         stat <= CHK_CRFLAG;
                     WHEN CHK_CRFLAG =>
@@ -246,7 +247,7 @@ BEGIN
                         END IF;
                     WHEN CHK_FLAG =>
                         IF transposeFlag THEN
-                            TransposeInPosition(code);
+                            TransposeInPositionVAR(code);
                         END IF;
                         stat <= EXTRACT;
                     WHEN EXTRACT =>
@@ -258,8 +259,8 @@ BEGIN
                         END IF;
                     WHEN RDY =>
                         ready <= '1';
-                        REPORT LF & "[DEC/BAO3] codeIn=" & LF & MXIO_toString(codeIn);
-                        REPORT LF & "[DEC/BAO3] corr=" & LF & MXIO_toString(code);
+                        REPORT LF & "[DEC/EHPC] codeIn=" & LF & MXIO_toHexString(codeIn);
+                        REPORT LF & "[DEC/EHPC] corr=" & LF & MXIO_toHexString(code);
                         -- REPORT LF & "[DEC/BAO3] msg=" & LF & MXIO_toString(message);
                     WHEN OTHERS =>
                 END CASE;
