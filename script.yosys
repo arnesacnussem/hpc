@@ -1,0 +1,7 @@
+ghdl --std=08 `cat hierarchy.list` -e decoder_ehpc;
+synth_ice40;
+fsm;
+opt;
+write_verilog  yosys.v;
+write_json yosys.json;
+show --prefix ./graphviz

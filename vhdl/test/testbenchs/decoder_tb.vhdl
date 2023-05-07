@@ -45,10 +45,10 @@ BEGIN
             matOut => codeModified
         );
 
-    decoder_inst : ENTITY work.decoder
-        GENERIC MAP(
-            decoder_type => DUMMY
-        )
+    decoder_inst : ENTITY work.dec_ehpc_top
+        -- GENERIC MAP(
+        --     decoder_type => DUMMY
+        -- )
         PORT MAP(
             codeIn  => codeModified,
             msg     => msg_o,
@@ -70,7 +70,7 @@ BEGIN
         END LOOP;
 
         clk <= NOT clk;
-        WAIT FOR 1 ps;
+        WAIT FOR 100 ns;
         IF exit1 THEN
             WAIT;
         END IF;

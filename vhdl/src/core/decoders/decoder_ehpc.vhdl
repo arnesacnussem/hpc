@@ -36,7 +36,15 @@ BEGIN
         VARIABLE err_pos : INTEGER;
         VARIABLE code_line : CODEWORD_LINE;
 
-        VARIABLE index : NATURAL := 0;
+    ehpc_proc : PROCESS (clk)
+        VARIABLE err_exist     : BOOLEAN;
+        VARIABLE err_pos       : INTEGER;
+        VARIABLE code_line     : CODEWORD_LINE;
+        VARIABLE col_err_pos   : int_array(codeIn'RANGE(1))  := (OTHERS => 0);
+        VARIABLE transposeFlag : BOOLEAN                     := false;
+        VARIABLE code          : CODEWORD_MAT;
+        VARIABLE message       : MSG_MAT;
+        VARIABLE index         : NATURAL := 0;
 
         IMPURE FUNCTION nextIndex(lim : INTEGER) RETURN BOOLEAN IS
         BEGIN
@@ -69,6 +77,8 @@ BEGIN
 
         PROCEDURE UpdateCountSum IS
         BEGIN
+            col_count := 0;
+            row_count := 0;
             FOR i IN col_vector'RANGE LOOP
                 IF col_vector(i) = '1' THEN
                     col_count := col_count + 1;

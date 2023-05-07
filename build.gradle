@@ -150,7 +150,7 @@ task run {
     doLast {
         exec {
             workingDir = ghdl.workDir
-            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--vcd=wave.vcd'].flatten()
+            commandLine = [ghdl.exec, '-r', ghdl.args, ghdl.topLevel, '--wave=wave.ghw', '--vcd=wave.vcd', '--stop-time=100ns'].flatten()
         }
     }
 }
