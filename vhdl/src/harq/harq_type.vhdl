@@ -1,5 +1,5 @@
 PACKAGE harq_type IS
 
-    TYPE HARQ_RESP IS(ACK_T1, ACK_T2, NACK);
+    TYPE HARQ_RESP IS(ACK, NACK);
 
 END PACKAGE harq_type;

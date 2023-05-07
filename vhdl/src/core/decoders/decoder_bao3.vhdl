@@ -36,9 +36,10 @@ BEGIN
     BEGIN
         IF rising_edge(clk) THEN
             IF rst = '1' THEN
-                msg   <= (OTHERS => MXIO_ROW(ieee.numeric_bit.to_unsigned(0, msg(0)'length)));
-                ready <= '0';
-                stat  <= COPY;
+                msg     <= (OTHERS => MXIO_ROW(ieee.numeric_bit.to_unsigned(0, msg(0)'length)));
+                ready   <= '0';
+                has_err <= '0';
+                stat    <= COPY;
             ELSE
                 CASE stat IS
                     WHEN COPY =>

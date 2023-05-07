@@ -9,7 +9,7 @@
       "name": "ts-node",
       "type": "node",
       "request": "launch",
-      "args": ["${relativeFile}"],
+      "args": ["${relativeFile}","decoder_tb"],
       "runtimeArgs": ["-r", "ts-node/register","--loader","ts-node/esm"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",

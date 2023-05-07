@@ -12,6 +12,17 @@ buildtimetracker {
         }
     }
 }
+import groovy.json.JsonSlurper
+
+def getNodeByName(String jsonString, String nodeName,String defaultVal) {
+    def root = new JsonSlurper().parseText(jsonString)
+    def node = root[nodeName]
+    if (node == null) {
+        println("**${nodeName} not found in JSON, using default value")
+        return defaultVal
+    }
+    return node
+}
 
 String props(String name, String defaultVal) {
     return project.findProperty(name) ?: defaultVal
@@ -71,6 +82,7 @@ task hierarchy(type: NodeTask) {
     outputs.file outFile
 
     script = file("${dir.out}/dist/hierarchy.js")
+    args = [ghdl.topLevel]
     def output = new ByteArrayOutputStream()
     def output2 = new ByteArrayOutputStream()
     execOverrides {
@@ -78,11 +90,14 @@ task hierarchy(type: NodeTask) {
         standardOutput = output
     }
     doLast {
+        String outStr = output
+        String hierarchyStr = getNodeByName(outStr, 'hierarchy', '')
+        String topLevelPath = getNodeByName(outStr, 'topLevelFile', "${dir.src}/test/testbenchs/decoder_tb.vhdl")
         exec {
-            commandLine 'python', "${dir.scripts}/modify.py", "${dir.src}/test/testbenchs/decoder_tb.vhdl", dir.out, modify_replace, '-'
+            commandLine 'python', "${dir.scripts}/modify.py", topLevelPath, dir.out, modify_replace, '-'
             errorOutput = System.err
             standardOutput = output2
-            standardInput = new ByteArrayInputStream(output.toString().bytes)
+            standardInput = new ByteArrayInputStream(hierarchyStr.bytes)
         }
     }
     doLast {
@@ -189,19 +204,5 @@ task tar {
     doLast {
         ant.tar(destfile: "${ghdl.workDir}/src-${decoder_algorithm}.tgz",
             basedir: "${ghdl.workDir}/vhdl", compression:'gzip')
-    }
-}
-
-task graphvizDot {
-    group 'build:ghdl'
-    description 'Create a graphviz DOT file for the top level'
-    dependsOn run
-
-    doLast {
-        exec {
-            def ghdlCmd = [ghdl.exec, ghdl.args, hierarchy.list(), '-e', 'decoder_shpc'].flatten().join(' ')
-            workingDir = ghdl.workDir
-            commandLine 'yosys', '-m', 'ghdl', '-p', "$ghdlCmd; synth_intel_alm; show -stretch -nobg -prefix ${ghdl.workDir}"
-        }
     }
 }
