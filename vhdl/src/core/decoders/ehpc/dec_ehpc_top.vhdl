@@ -17,58 +17,32 @@ ENTITY dec_ehpc_top IS
 END ENTITY;
 ARCHITECTURE rtl OF dec_ehpc_top IS
     TYPE int_array IS ARRAY (NATURAL RANGE <>) OF INTEGER;
-    TYPE stat_t IS (COPY, CHK_CR1, ERASE);
-    SIGNAL stat         : stat_t                            := COPY;
+
+    -- FSM control
     CONSTANT components : NATURAL                           := 2;
     SIGNAL clk_internal : STD_LOGIC_VECTOR(1 TO components) := (OTHERS => '0');
     SIGNAL rdy_internal : STD_LOGIC_VECTOR(1 TO components) := (OTHERS => '0');
 
     -- internal connections
     SIGNAL mem_code      : CODEWORD_MAT;
-    SIGNAL link_erase      : CODEWORD_MAT;
+    SIGNAL link_erase    : CODEWORD_MAT;
     SIGNAL row_vector    : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_vector    : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
     SIGNAL row_uncorrect : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_uncorrect : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
     SIGNAL col_err_pos   : int_array(codeIn'RANGE(1))  := (OTHERS => 0);
+    SIGNAL col_count     : NATURAL                     := 0;
+    SIGNAL row_count     : NATURAL                     := 0;
+    SIGNAL col_sum       : NATURAL                     := 0;
+    SIGNAL row_sum       : NATURAL                     := 0;
+
+    PROCEDURE ActiveComponent () IS
+    BEGIN
+
+    END PROCEDURE;
 BEGIN
     PROCESS (rdy_internal, rst, clk)
-        VARIABLE col_count : INTEGER := 0;
-        VARIABLE row_count : INTEGER := 0;
-        VARIABLE col_sum   : INTEGER := 0;
-        VARIABLE row_sum   : INTEGER := 0;
 
-        FUNCTION sum_vec(vec1 : bit_vector; vec2 : bit_vector) RETURN INTEGER IS
-            VARIABLE result : INTEGER := 0;
-        BEGIN
-            FOR i IN vec1'RANGE LOOP
-                IF vec1(i) = '1' THEN
-                    result := result + 1;
-                END IF;
-                IF vec2(i) = '1' THEN
-                    result := result + 1;
-                END IF;
-            END LOOP;
-            RETURN result; -- Return the sum of the corresponding elements
-        END FUNCTION;
-
-        PROCEDURE UpdateCountSum IS
-        BEGIN
-            col_count := 0;
-            row_count := 0;
-            FOR i IN col_vector'RANGE LOOP
-                IF col_vector(i) = '1' THEN
-                    col_count := col_count + 1;
-                END IF;
-            END LOOP;
-            FOR i IN row_vector'RANGE LOOP
-                IF row_vector(i) THEN
-                    row_count := row_count + 1;
-                END IF;
-            END LOOP;
-            col_sum := sum_vec(col_vector, col_uncorrect);
-            row_sum := sum_vec(row_vector, row_uncorrect);
-        END PROCEDURE;
     BEGIN
         IF rst = '1' THEN
             msg   <= (OTHERS => MXIO_ROW(ieee.numeric_bit.to_unsigned(0, msg(0)'length)));
@@ -91,7 +65,7 @@ BEGIN
 
     ehpc_cr1_inst : ENTITY work.ehpc_cr1
         PORT MAP(
-            enable           => clk_internal(1),
+            enable        => clk_internal(1),
             reset         => rst,
             rec           => mem_code,
             rdy           => rdy_internal(1),
@@ -110,4 +84,18 @@ BEGIN
             row_vector => row_vector,
             col_vector => col_vector
         );
+
+    ehpc_vector_chk_inst : ENTITY work.ehpc_vector_chk
+        PORT MAP(
+            row_vector    => row_vector,
+            col_vector    => col_vector,
+            row_uncorrect => row_uncorrect,
+            col_uncorrect => col_uncorrect,
+            col_count     => col_count,
+            row_count     => row_count,
+            col_sum       => col_sum,
+            row_sum       => row_sum,
+            clk           => clk
+        );
+
 END ARCHITECTURE rtl;
