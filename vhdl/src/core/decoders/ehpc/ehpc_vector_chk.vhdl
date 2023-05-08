@@ -18,45 +18,49 @@ ENTITY ehpc_vector_chk IS
         col_sum   : OUT NATURAL := 0;
         row_sum   : OUT NATURAL := 0;
 
-        clk : IN STD_LOGIC
+        clk   : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+        ready : OUT STD_LOGIC
     );
 END ENTITY ehpc_vector_chk;
 
 ARCHITECTURE rtl OF ehpc_vector_chk IS
-
+    PROCEDURE VectorCS (
+        SIGNAL vec1 : IN bit_vector;
+        SIGNAL vec2 : IN bit_vector;
+        SIGNAL sum  : OUT NATURAL;
+        SIGNAL cnt  : OUT NATURAL
+    ) IS
+        VARIABLE count : NATURAL := 0;
+    BEGIN
+        FOR i IN 0 TO 1 LOOP
+            IF vec1(i) = '1' THEN
+                count := count + 1;
+            END IF;
+        END LOOP;
+        sum <= count;
+        FOR i IN 0 TO 1 LOOP
+            IF vec2(i) = '1' THEN
+                count := count + 1;
+            END IF;
+        END LOOP;
+        cnt <= count;
+    END PROCEDURE;
 BEGIN
 
     PROCESS (clk)
-        FUNCTION VectorSum(vec1 : bit_vector; vec2 : bit_vector) RETURN NATURAL IS
-            VARIABLE result : INTEGER := 0;
-        BEGIN
-            FOR i IN vec1'RANGE LOOP
-                IF vec1(i) = '1' THEN
-                    result := result + 1;
-                END IF;
-                IF vec2(i) = '1' THEN
-                    result := result + 1;
-                END IF;
-            END LOOP;
-            RETURN result; -- Return the sum of the corresponding elements
-        END FUNCTION;
-
-        FUNCTION VectorCount(vec : bit_vector) RETURN NATURAL IS
-            VARIABLE count           : NATURAL := 0;
-        BEGIN
-            FOR i IN vec'RANGE LOOP
-                IF vec(i) = '1' THEN
-                    count := count + 1;
-                END IF;
-            END LOOP;
-            RETURN count;
-        END VectorCount;
     BEGIN
         IF rising_edge(clk) THEN
-            col_count <= VectorCount(col_vector);
-            row_count <= VectorCount(row_vector);
-            col_sum   <= VectorSum(col_vector, col_uncorrect);
-            row_sum   <= VectorSum(row_vector, row_uncorrect);
+            IF reset = '1' THEN
+                ready     <= '0';
+                row_sum   <= 0;
+                col_sum   <= 0;
+                row_count <= 0;
+                col_count <= 0;
+            ELSE
+                VectorCS(vec1 => row_vector, vec2 => row_uncorrect, sum => row_sum, cnt => row_count);
+                VectorCS(vec1 => col_vector, vec2 => col_uncorrect, sum => col_sum, cnt => col_count);
+            END IF;
         END IF;
     END PROCESS;
 END ARCHITECTURE rtl;

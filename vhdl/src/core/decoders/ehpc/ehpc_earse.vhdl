@@ -4,8 +4,9 @@ USE work.types.ALL;
 
 ENTITY ehpc_earse IS
     PORT (
-        enable : IN STD_LOGIC;
-        reset  : IN STD_LOGIC;
+        clk   : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+        ready : OUT STD_LOGIC;
 
         rec        : IN CODEWORD_MAT;
         recOut     : OUT CODEWORD_MAT;
@@ -15,21 +16,25 @@ ENTITY ehpc_earse IS
 END ENTITY;
 ARCHITECTURE rtl OF ehpc_earse IS
 BEGIN
-    PROCESS (enable)
+
+    PROCESS (clk)
         VARIABLE o : CODEWORD_MAT;
     BEGIN
-        IF rising_edge(enable) THEN
-            FOR i IN col_vector'RANGE LOOP
-                FOR j IN row_vector'RANGE LOOP
-                    IF col_vector(i) = '1' AND row_vector(j) = '1' THEN
-                        o(i)(j) := NOT rec(i)(j);
-                    ELSE
-                        o(i)(j) := rec(i)(j);
-                    END IF;
+        IF rising_edge(clk) THEN
+            IF reset = '1' THEN
+                ready <= '0';
+            ELSE
+                FOR c IN col_vector'RANGE LOOP
+                    FOR r IN row_vector'RANGE LOOP
+                        IF col_vector(c) = '1' AND row_vector(r) = '1' THEN
+                            o(r)(c) := NOT rec(r)(c);
+                        ELSE
+                            o(r)(c) := rec(r)(c);
+                        END IF;
+                    END LOOP;
                 END LOOP;
-            END LOOP;
-            recOut <= o;
-        ELSE
+                recOut <= o;
+            END IF;
         END IF;
     END PROCESS;
 END ARCHITECTURE rtl;

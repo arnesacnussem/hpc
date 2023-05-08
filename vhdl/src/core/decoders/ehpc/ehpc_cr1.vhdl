@@ -8,11 +8,11 @@ USE work.decoder_utils.ALL;
 
 ENTITY ehpc_cr1 IS
     PORT (
-        enable : IN STD_LOGIC;
-        reset  : IN STD_LOGIC;
-        rec    : IN CODEWORD_MAT;
-        rdy    : OUT STD_LOGIC;
+        clk   : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+        ready : OUT STD_LOGIC;
 
+        rec           : IN CODEWORD_MAT;
         row_vector    : OUT bit_vector(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
         col_vector    : OUT bit_vector(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
         row_uncorrect : OUT bit_vector(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
@@ -24,46 +24,54 @@ ARCHITECTURE rtl OF ehpc_cr1 IS
     SIGNAL col_rdy : STD_LOGIC_VECTOR(rec'RANGE(1)) := (OTHERS => '0');
     SIGNAL row_rdy : STD_LOGIC_VECTOR(rec'RANGE)    := (OTHERS => '0');
 BEGIN
-    row_chk : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
-        row_chk_proc : PROCESS (enable, reset)
+    gen_row : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
+        proc_row : PROCESS (clk)
             VARIABLE code_line : CODEWORD_LINE;
             VARIABLE err_exist : BOOLEAN;
             VARIABLE err_pos   : INTEGER;
         BEGIN
-            IF reset = '1' THEN
-                row_rdy(i) <= '0';
-            ELSIF rising_edge(enable) THEN
-                code_line := rec(i);
-                line_decode(code_line, err_exist, err_pos);
-                IF err_exist THEN
-                    row_vector(i) <= '1';
-                    IF err_pos =- 1 THEN
-                        row_uncorrect(i) <= '1';
+            IF rising_edge(clk) THEN
+                IF reset = '1' THEN
+                    row_rdy(i)       <= '0';
+                    row_vector(i)    <= '0';
+                    row_uncorrect(i) <= '0';
+                ELSE
+                    code_line := rec(i);
+                    line_decode(code_line, err_exist, err_pos);
+                    IF err_exist THEN
+                        row_vector(i) <= '1';
+                        IF err_pos =- 1 THEN
+                            row_uncorrect(i) <= '1';
+                        END IF;
                     END IF;
+                    row_rdy(i) <= '1';
                 END IF;
-                row_rdy(i) <= '1';
             END IF;
         END PROCESS;
     END GENERATE;
 
-    col_chk : FOR i IN 0 TO 0 GENERATE
-        col_chk_proc : PROCESS (enable, reset)
+    gen_col : FOR i IN 0 TO 0 GENERATE
+        proc_col : PROCESS (clk, reset)
             VARIABLE code_line : CODEWORD_LINE;
             VARIABLE err_exist : BOOLEAN;
             VARIABLE err_pos   : INTEGER;
         BEGIN
-            IF reset = '1' THEN
-                col_rdy(i) <= '0';
-            ELSIF rising_edge(enable) THEN
-                code_line := getColumn(rec, i);
-                line_decode(code_line, err_exist, err_pos);
-                IF err_exist THEN
-                    col_vector(i) <= '1';
-                    IF err_pos =- 1 THEN
-                        col_uncorrect(i) <= '1';
+            IF rising_edge(clk) THEN
+                IF reset = '1' THEN
+                    col_rdy(i)       <= '0';
+                    col_vector(i)    <= '0';
+                    col_uncorrect(i) <= '0';
+                ELSE
+                    code_line := getColumn(rec, i);
+                    line_decode(code_line, err_exist, err_pos);
+                    IF err_exist THEN
+                        col_vector(i) <= '1';
+                        IF err_pos =- 1 THEN
+                            col_uncorrect(i) <= '1';
+                        END IF;
                     END IF;
+                    col_rdy(i) <= '1';
                 END IF;
-                col_rdy(i) <= '1';
             END IF;
         END PROCESS;
     END GENERATE;
@@ -87,9 +95,9 @@ BEGIN
         END LOOP;
 
         IF col_found = false AND row_found = false THEN
-            rdy <= '1';
+            ready <= '1';
         ELSE
-            rdy <= '0';
+            ready <= '0';
         END IF;
     END PROCESS;
 END ARCHITECTURE rtl;
