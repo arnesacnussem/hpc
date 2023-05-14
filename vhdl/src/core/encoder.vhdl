@@ -46,7 +46,7 @@ BEGIN
         msg_tmp := msg;
         IF rising_edge(clk) THEN
             IF rst = '1' THEN
-                codeword := (OTHERS => MXIO_ROW(to_unsigned(0, codeword(0)'length)));
+                codeword := (OTHERS => (others => '0'));
                 index    := 0;
                 ready <= '0';
                 stat  <= R1;

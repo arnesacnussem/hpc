@@ -10,15 +10,15 @@ ENTITY ehpc_earse IS
 
         rec        : IN CODEWORD_MAT;
         recOut     : OUT CODEWORD_MAT;
-        col_vector : IN bit_vector(CODEWORD_MAT'RANGE);
-        row_vector : IN bit_vector(CODEWORD_MAT'RANGE)
+        col_vector : IN STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE);
+        row_vector : IN STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE)
     );
 END ENTITY;
 ARCHITECTURE rtl OF ehpc_earse IS
 BEGIN
 
     PROCESS (clk)
-        VARIABLE o : CODEWORD_MAT;
+        VARIABLE temp : CODEWORD_MAT := rec;
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
@@ -27,13 +27,13 @@ BEGIN
                 FOR c IN col_vector'RANGE LOOP
                     FOR r IN row_vector'RANGE LOOP
                         IF col_vector(c) = '1' AND row_vector(r) = '1' THEN
-                            o(r)(c) := NOT rec(r)(c);
+                            temp(r)(c) := NOT rec(r)(c);
                         ELSE
-                            o(r)(c) := rec(r)(c);
+                            temp(r)(c) := rec(r)(c);
                         END IF;
                     END LOOP;
                 END LOOP;
-                recOut <= o;
+                recOut <= temp;
             END IF;
         END IF;
     END PROCESS;

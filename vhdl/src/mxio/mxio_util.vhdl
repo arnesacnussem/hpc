@@ -6,14 +6,11 @@ USE work.types.ALL;
 USE work.constants.ALL;
 
 PACKAGE mxio_util IS
-    FUNCTION bitToChar(b                 : BIT) RETURN CHARACTER;
+    FUNCTION bitToChar(b                 : STD_LOGIC) RETURN CHARACTER;
     FUNCTION MXIO_toString (input_mxio   : MXIO) RETURN STRING;
     FUNCTION MXIO_toHexString(input_mxio : MXIO) RETURN STRING;
 
-    FUNCTION getColumn (
-        mat   : MXIO;
-        index : INTEGER
-    ) RETURN MXIO_ROW;
+    FUNCTION getColumn(mat : MXIO; index : NATURAL) RETURN MXIO_ROW;
 
     TYPE IOMode IS (INPUT, OUTPUT);
     PROCEDURE TransposeInPositionVAR(mat        : INOUT MXIO);
@@ -23,7 +20,7 @@ END PACKAGE;
 
 PACKAGE BODY mxio_util IS
 
-    FUNCTION bitToChar(b : BIT) RETURN CHARACTER IS
+    FUNCTION bitToChar(b : STD_LOGIC) RETURN CHARACTER IS
     BEGIN
         IF b = '1' THEN
             RETURN '1';
@@ -47,7 +44,7 @@ PACKAGE BODY mxio_util IS
         RETURN result(1 TO index - 1);
     END MXIO_toString;
 
-    FUNCTION halfByteToChar(input_val : IN bit_vector(0 TO 3)) RETURN CHARACTER IS
+    FUNCTION halfByteToChar(input_val : IN STD_LOGIC_VECTOR(0 TO 3)) RETURN CHARACTER IS
     BEGIN
         CASE input_val IS
             WHEN "0000" => RETURN '0';
@@ -66,13 +63,14 @@ PACKAGE BODY mxio_util IS
             WHEN "1101" => RETURN 'D';
             WHEN "1110" => RETURN 'E';
             WHEN "1111" => RETURN 'F';
+            WHEN OTHERS => RETURN 'X';
         END CASE;
     END halfByteToChar;
 
     FUNCTION mxio_row_to_hex(val : IN MXIO_ROW) RETURN STRING IS
         CONSTANT length              : INTEGER := ((val'length + 3) / 4) * 4;
         VARIABLE result              : STRING(1 TO length/4);
-        VARIABLE padded              : BIT_VECTOR(0 TO length - 1) := (OTHERS => '0');
+        VARIABLE padded              : STD_LOGIC_VECTOR(0 TO length - 1) := (OTHERS => '0');
     BEGIN
         -- Copy the input value into the end of the padded
         padded(length - val'length TO length - 1) := val(val'RANGE);
@@ -97,7 +95,7 @@ PACKAGE BODY mxio_util IS
 
     FUNCTION getColumn (
         mat   : MXIO;
-        index : INTEGER
+        index : NATURAL
     ) RETURN MXIO_ROW IS
         VARIABLE col : MXIO_ROW(mat(0)'RANGE);
     BEGIN
@@ -107,8 +105,9 @@ PACKAGE BODY mxio_util IS
         END LOOP;
         RETURN col;
     END FUNCTION;
+
     PROCEDURE TransposeInPositionVAR(mat : INOUT MXIO) IS
-        VARIABLE temp_bit                    : BIT;
+        VARIABLE temp_bit                    : STD_LOGIC;
     BEGIN
         FOR i IN 0 TO mat'length - 1 LOOP
             FOR j IN i + 1 TO mat'length(1) - 1 LOOP
@@ -127,7 +126,7 @@ PACKAGE BODY mxio_util IS
         END LOOP;
     END TransposeInPositionVAR;
     PROCEDURE TransposeInPositionSIG(SIGNAL mat : INOUT MXIO) IS
-        VARIABLE temp_bit                           : BIT;
+        VARIABLE temp_bit                           : STD_LOGIC;
     BEGIN
         FOR i IN 0 TO mat'length - 1 LOOP
             FOR j IN i + 1 TO mat'length(1) - 1 LOOP

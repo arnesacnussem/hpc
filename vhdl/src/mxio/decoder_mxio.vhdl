@@ -12,12 +12,12 @@ ENTITY decoder_mxio IS
         CODE_RATIO : POSITIVE := CODEWORD_SERIAL'length;
         -- [0]: 输入缓存
         -- [1]: 输出填充
-        IO_CONTROL   : BIT_VECTOR(0 TO 1) := "10";
+        IO_CONTROL   : STD_LOGIC_VECTOR(0 TO 1) := "10";
         DECODER_TYPE : DecoderType        := DUMMY
     );
     PORT (
-        code  : IN BIT_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
-        msg   : OUT BIT_VECTOR(0 TO MSG_SERIAL'length / MSG_RATIO - 1);
+        code  : IN STD_LOGIC_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
+        msg   : OUT STD_LOGIC_VECTOR(0 TO MSG_SERIAL'length / MSG_RATIO - 1);
         clk   : IN STD_LOGIC;
         ready : OUT STD_LOGIC
     );
@@ -27,8 +27,8 @@ ARCHITECTURE encoder_mxio OF decoder_mxio IS
     SIGNAL msg_matrix  : MSG_MAT;
     SIGNAL code_matrix : CODEWORD_MAT;
     SIGNAL rst         : STD_LOGIC              := '0';
-    SIGNAL in_port     : BIT_VECTOR(code'RANGE) := code;
-    SIGNAL out_port    : BIT_VECTOR(msg'RANGE)  := msg;
+    SIGNAL in_port     : STD_LOGIC_VECTOR(code'RANGE) := code;
+    SIGNAL out_port    : STD_LOGIC_VECTOR(msg'RANGE)  := msg;
 
     -- [0] mxio_in_ready
     -- [1] codec_ready

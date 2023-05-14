@@ -8,10 +8,10 @@ USE work.decoder_utils.ALL;
 
 ENTITY ehpc_vector_chk IS
     PORT (
-        row_vector    : IN bit_vector(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
-        col_vector    : IN bit_vector(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
-        row_uncorrect : IN bit_vector(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
-        col_uncorrect : IN bit_vector(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
+        row_vector    : IN STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
+        col_vector    : IN STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
+        row_uncorrect : IN STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
+        col_uncorrect : IN STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
 
         col_count : OUT NATURAL := 0;
         row_count : OUT NATURAL := 0;
@@ -26,20 +26,20 @@ END ENTITY ehpc_vector_chk;
 
 ARCHITECTURE rtl OF ehpc_vector_chk IS
     PROCEDURE VectorCS (
-        SIGNAL vec1 : IN bit_vector;
-        SIGNAL vec2 : IN bit_vector;
+        SIGNAL vec1 : IN STD_LOGIC_VECTOR;
+        SIGNAL vec2 : IN STD_LOGIC_VECTOR;
         SIGNAL sum  : OUT NATURAL;
         SIGNAL cnt  : OUT NATURAL
     ) IS
         VARIABLE count : NATURAL := 0;
     BEGIN
-        FOR i IN 0 TO 1 LOOP
+        FOR i IN vec1'RANGE LOOP
             IF vec1(i) = '1' THEN
                 count := count + 1;
             END IF;
         END LOOP;
         sum <= count;
-        FOR i IN 0 TO 1 LOOP
+        FOR i IN vec2'RANGE LOOP
             IF vec2(i) = '1' THEN
                 count := count + 1;
             END IF;

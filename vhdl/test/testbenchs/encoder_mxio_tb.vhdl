@@ -14,11 +14,11 @@ ARCHITECTURE bench OF encoder_mxio_tb IS
     -- Generics
     CONSTANT MSG_RATIO  : POSITIVE           := 4;
     CONSTANT CODE_RATIO : POSITIVE           := 7;
-    CONSTANT IO_CONTROL : BIT_VECTOR(0 TO 1) := "10";
+    CONSTANT IO_CONTROL : STD_LOGIC_VECTOR(0 TO 1) := "10";
 
     -- Ports
-    SIGNAL msg        : BIT_VECTOR(0 TO MSG_SERIAL'length / MSG_RATIO - 1);
-    SIGNAL code       : BIT_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
+    SIGNAL msg        : STD_LOGIC_VECTOR(0 TO MSG_SERIAL'length / MSG_RATIO - 1);
+    SIGNAL code       : STD_LOGIC_VECTOR(0 TO CODEWORD_SERIAL'length / CODE_RATIO - 1);
     SIGNAL clk        : STD_LOGIC := '0';
     SIGNAL device_clk : STD_LOGIC := '0';
     SIGNAL ready      : STD_LOGIC;

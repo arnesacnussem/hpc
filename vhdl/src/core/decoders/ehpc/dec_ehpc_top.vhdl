@@ -17,7 +17,7 @@ ENTITY dec_ehpc_top IS
 END ENTITY;
 ARCHITECTURE rtl OF dec_ehpc_top IS
     TYPE int_array IS ARRAY (NATURAL RANGE <>) OF INTEGER;
-    TYPE state_t IS (COPY, CHK_CR1, ERASE, VEC_CHK);
+    TYPE state_t IS (COPY, CHK_CR1, ERASE, VEC_CHK, CHK_CR2, VEC_RST);
     TYPE state_map IS ARRAY(state_t RANGE <>) OF STD_LOGIC;
     SIGNAL state : state_t := COPY;
     SIGNAL clock : state_map(state_t'left TO state_t'right);
@@ -28,46 +28,105 @@ ARCHITECTURE rtl OF dec_ehpc_top IS
     CONSTANT components : NATURAL := 10;
 
     -- internal connections
-    SIGNAL link_erase : CODEWORD_MAT;
-    SIGNAL code_mem   : CODEWORD_MAT;
+    SIGNAL link_erase   : CODEWORD_MAT;
+    SIGNAL link_chk_cr2 : CODEWORD_MAT;
+    SIGNAL bus_codeword : CODEWORD_MAT;
 
-    SIGNAL row_vector    : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
-    SIGNAL col_vector    : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
-    SIGNAL row_uncorrect : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
-    SIGNAL col_uncorrect : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
+    SIGNAL row_vector    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL col_vector    : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
+    SIGNAL row_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL col_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
     SIGNAL col_err_pos   : int_array(codeIn'RANGE(1))  := (OTHERS => 0);
     SIGNAL col_count     : NATURAL                     := 0;
     SIGNAL row_count     : NATURAL                     := 0;
     SIGNAL col_sum       : NATURAL                     := 0;
     SIGNAL row_sum       : NATURAL                     := 0;
+
+    -- CHK_CR1
+    SIGNAL row_vector_cr1    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL col_vector_cr1    : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
+    SIGNAL row_uncorrect_cr1 : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL col_uncorrect_cr1 : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
+
+    -- CHK_CR2
+    SIGNAL row_vector_cr2    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL col_vector_cr2    : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
+    SIGNAL row_uncorrect_cr2 : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+    SIGNAL col_uncorrect_cr2 : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
 BEGIN
 
     -- this process also act as the memory controller
     ehpc_fsm : PROCESS (clk)
-        VARIABLE nextState : state_t := COPY;
+        IMPURE FUNCTION componentReady RETURN BOOLEAN IS
+        BEGIN
+            RETURN rdy(state) = '1';
+        END FUNCTION;
     BEGIN
         IF rising_edge(clk) THEN
-            IF rdy(state) = '1' THEN
-                state <= nextState;
-            ELSE
-                CASE state IS
-                    WHEN COPY =>
-                        code_mem <= codeIn;
-                        nextState := CHK_CR1;
-                    WHEN CHK_CR1 =>
-                    WHEN VEC_CHK =>
-                    WHEN ERASE   =>
-                    WHEN OTHERS  =>
-                END CASE;
-            END IF;
+            CASE state IS
+                WHEN COPY =>
+                    bus_codeword <= codeIn;
+                    state        <= CHK_CR1;
+                WHEN CHK_CR1 =>
+                    IF componentReady THEN
 
+                    END IF;
+                WHEN CHK_CR2 =>
+                WHEN VEC_CHK =>
+                WHEN ERASE   =>
+                WHEN OTHERS  =>
+            END CASE;
         END IF;
     END PROCESS;
 
-    ehpc_clk_mux : PROCESS (clk, state)
+    -- mux_codeword : PROCESS (state)
+    -- BEGIN
+    --     CASE state IS
+    --         WHEN COPY    =>
+    --         WHEN CHK_CR1 =>
+    --             bus_codeword <= codeIn;
+    --         WHEN OTHERS =>
+    --     END CASE;
+    -- END PROCESS;
+
+    mux_clk : PROCESS (clk, state)
     BEGIN
         clock        <= (OTHERS => '0');
         clock(state) <= clk;
+    END PROCESS;
+
+    mux_vec : PROCESS (
+        state,
+        row_vector_cr1,
+        col_vector_cr1,
+        row_uncorrect_cr1,
+        col_uncorrect_cr1,
+        row_vector_cr2,
+        col_vector_cr2,
+        row_uncorrect_cr2,
+        col_uncorrect_cr2
+        )
+    BEGIN
+        CASE state IS
+
+            WHEN CHK_CR1 =>
+                row_vector    <= row_vector_cr1;
+                col_vector    <= col_vector_cr1;
+                row_uncorrect <= row_uncorrect_cr1;
+                col_uncorrect <= col_uncorrect_cr1;
+
+            WHEN CHK_CR2 =>
+                row_vector    <= row_vector_cr2;
+                col_vector    <= col_vector_cr2;
+                row_uncorrect <= row_uncorrect_cr2;
+                col_uncorrect <= col_uncorrect_cr2;
+
+            WHEN OTHERS              =>
+                row_vector    <= (OTHERS => '0');
+                col_vector    <= (OTHERS => '0');
+                row_uncorrect <= (OTHERS => '0');
+                col_uncorrect <= (OTHERS => '0');
+        END CASE;
     END PROCESS;
 
     ehpc_cr1_inst : ENTITY work.ehpc_cr1
@@ -76,11 +135,11 @@ BEGIN
             reset => reset(CHK_CR1),
             ready => rdy(CHK_CR1),
 
-            rec           => code_mem,
-            row_vector    => row_vector,
-            col_vector    => col_vector,
-            row_uncorrect => row_uncorrect,
-            col_uncorrect => col_uncorrect
+            rec           => bus_codeword,
+            row_vector    => row_vector_cr1,
+            col_vector    => col_vector_cr1,
+            row_uncorrect => row_uncorrect_cr1,
+            col_uncorrect => col_uncorrect_cr1
         );
 
     ehpc_earse_inst : ENTITY work.ehpc_earse
@@ -89,7 +148,7 @@ BEGIN
             reset => reset(ERASE),
             ready => rdy(ERASE),
 
-            rec        => code_mem,
+            rec        => bus_codeword,
             recOut     => link_erase,
             row_vector => row_vector,
             col_vector => col_vector
@@ -111,4 +170,17 @@ BEGIN
             ready => rdy(VEC_CHK)
         );
 
+    ehpc_cr2_inst : ENTITY work.ehpc_cr2
+        PORT MAP(
+            clk   => clock(CHK_CR2),
+            reset => reset(CHK_CR2),
+            ready => rdy(CHK_CR2),
+
+            rec           => bus_codeword,
+            recOut        => link_chk_cr2,
+            row_vector    => row_vector_cr2,
+            col_vector    => col_vector_cr2,
+            row_uncorrect => row_uncorrect_cr2,
+            col_uncorrect => col_uncorrect_cr2
+        );
 END ARCHITECTURE rtl;

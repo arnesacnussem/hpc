@@ -17,10 +17,10 @@ if sys.argv[2] is not None:
     chk_bit = int(sys.argv[2])
 
 if output_type == "84":
-    arg_tup = octave.gen84(chk_bit, nout=6)
+    arg_tup = octave.gen84(chk_bit, nout=4)
 else:
-    arg_tup = octave.gen73(chk_bit, nout=6)
-H, G, n, k, table, syndt = arg_tup
+    arg_tup = octave.gen73(chk_bit, nout=4)
+H, G, n, k = arg_tup
 n, k = int(n), int(k)
 
 brief = f"""
@@ -28,8 +28,6 @@ generate by arg type={output_type} chk_bit={chk_bit}
 n,k   = {(n,k)}
 H     = {np.shape(H)}
 G     = {np.shape(G)}
-table = {np.shape(table)}
-syndt = {np.shape(syndt)}
 """
 
 
@@ -54,10 +52,9 @@ def headerAndFooter(pkg):
 
 
 shapeH = np.shape(H)
-shapeSyndT = np.shape(syndt)
 types = f"""
-    TYPE REF_TABLE_ARR IS ARRAY (0 TO {len(table) - 1}) OF INTEGER;
-    SUBTYPE MXIO_ROW IS BIT_VECTOR;
+    TYPE int_array IS ARRAY (NATURAL RANGE <>) OF INTEGER;
+    SUBTYPE MXIO_ROW IS STD_LOGIC_VECTOR;
     TYPE MXIO IS ARRAY(NATURAL RANGE <>) OF MXIO_ROW;
 
     SUBTYPE GEN_MAT IS MXIO (0 TO {k - 1})(0 TO {n - 1});
@@ -92,15 +89,6 @@ constants = f"""
     CONSTANT CHECK_MATRIX_T : CHK_MAT := (
         {mat2VHDstr(H)}
     );
-
-    CONSTANT REF_TABLE : REF_TABLE_ARR := (
-        {", ".join(np.transpose(table)[0].astype(int).astype(str))}
-    );
-
-    CONSTANT SYNDTABLE : MXIO(0 TO {shapeSyndT[0] - 1})(0 TO {
-        shapeSyndT[1] - 1}) := (
-        {mat2VHDstr(syndt)}
-    );
 """
 
 test_message = np.vectorize(
@@ -110,6 +98,7 @@ test_data = f"""
 library ieee;
 USE work.types.ALL;
 USE work.constants.ALL;
+USE ieee.std_logic_1164.ALL;
 PACKAGE test_data IS
     CONSTANT MESSAGE_MATRIX : MSG_MAT := (
         {mat2VHDstr(test_message)}
@@ -128,7 +117,8 @@ if not os.path.isdir(f"{output_dir}"):
 
 
 open(f"{output_dir}/constants.vhdl", "w+"
-     ).write(header("constants") + "\nUSE work.types.ALL;\n" + constants + footer("constants"))
+     ).write(header("constants") + "\nUSE work.types.ALL;\n"
+             + constants + footer("constants"))
 
 open(f"{output_dir}/types.vhdl", "w+"
      ).write(header("types") + types + footer("types"))

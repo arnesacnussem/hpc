@@ -18,8 +18,9 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
         [rError_exist, rCorrectable, ~] = Hdecode(rrec, H, table);
 
         if rError_exist == 1
-            row_uncorrect(i) = 1 - rCorrectable;
             row1_vector(i) = 1;
+            
+            row_uncorrect(i) = 1 - rCorrectable;
         end
 
     end
@@ -98,6 +99,8 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
             col_vector(j) = 1;
 
             if cCorrectable == 1
+            % 把这个column error，site。变成一个二维数组，这样每一行。就是现在的这个元素。
+            % 每一行中值为1的就是现在的 error_site。
                 col_error_site(j) = cError_site;
 
                 if row_vector(cError_site) == 0

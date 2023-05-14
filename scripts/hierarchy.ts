@@ -35,6 +35,9 @@ const readFile = (filePath: string): VHDLFile => {
     package: [...content.matchAll(package_name)].map((m) => m[1])[0] || "",
     entity: [...content.matchAll(entity_name)].map((m) => m[1])[0] || "",
   };
+  if (file.name != file.package && file.name != file.entity) {
+    throw Error(`Name not match: ${file.path}`);
+  }
   clog(
     `${filePath} depends on [${[...file.packageDeps, ...file.entityDeps].join(
       ", "

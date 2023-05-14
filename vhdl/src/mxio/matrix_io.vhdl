@@ -3,7 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.numeric_bit.ALL;
 USE work.types.ALL;
-USE work.constants.ALL;
+
 ENTITY matrix_io IS
     GENERIC (
         COL_CNT  : POSITIVE := 1; -- 矩阵列数
@@ -13,10 +13,10 @@ ENTITY matrix_io IS
         -- IO模式(2bit)
         -- [0] 指定输入输出模式：0为输入（转为矩阵），1为输出（转自矩阵）
         -- [1] 输入模式：buffer开关，输出模式：是否补0
-        IO_MODE : BIT_VECTOR(0 TO 1) := (OTHERS => '0')
+        IO_MODE : STD_LOGIC_VECTOR(0 TO 1) := (OTHERS => '0')
     );
     PORT (
-        io_port : INOUT BIT_VECTOR(0 TO IO_WIDTH - 1) := (OTHERS => '0');
+        io_port : INOUT STD_LOGIC_VECTOR(0 TO IO_WIDTH - 1) := (OTHERS => '0');
         matrix  : INOUT MXIO(0 TO COL_CNT - 1)(0 TO ROW_CNT - 1);
         clk     : IN STD_LOGIC := '0';
         -- 使用buffer时，完整处理一次矩阵后置高ready信号至下一个时钟信号
@@ -31,7 +31,7 @@ ARCHITECTURE MATRIX_IO OF matrix_io IS
         VARIABLE col, row : INOUT NATURAL;
         VARIABLE rdy      : OUT BOOLEAN
     ) IS
-        VARIABLE rdyx : BIT_VECTOR(0 TO 1);
+        VARIABLE rdyx : STD_LOGIC_VECTOR(0 TO 1);
     BEGIN
         IF row + 1 = ROW_CNT THEN
             rdyx(0) := '1';

@@ -4,6 +4,7 @@ USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.constants.ALL;
 USE work.mxio_util.ALL;
+USE work.core_util.ALL;
 
 PACKAGE decoder_utils IS
     PROCEDURE line_decode (
@@ -11,26 +12,31 @@ PACKAGE decoder_utils IS
         VARIABLE err_exist : OUT BOOLEAN;
         VARIABLE err_pos   : OUT INTEGER -- err_pos大于等于0时表示该错误可纠正
     );
-
-    FUNCTION find (val : INTEGER) RETURN INTEGER;
-
-    FUNCTION syndrome (lin : CODEWORD_LINE) RETURN INTEGER;
+    FUNCTION find (synd_vec                     : STD_LOGIC_VECTOR) RETURN INTEGER;
+    FUNCTION syndrome (lin                      : CODEWORD_LINE) RETURN STD_LOGIC_VECTOR;
+    FUNCTION syndrome_to_flip_pattern (synd_vec : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH)) RETURN CODEWORD_LINE;
+    PROCEDURE line_decode_pattern (
+        VARIABLE lin         : IN CODEWORD_LINE;
+        VARIABLE err_exist   : OUT BOOLEAN;
+        VARIABLE err_pattern : OUT CODEWORD_LINE
+    );
+    CONSTANT synd_no_err : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH) := (OTHERS => '0');
 END PACKAGE;
 
 PACKAGE BODY decoder_utils IS
-    FUNCTION find (val : INTEGER) RETURN INTEGER IS
-        VARIABLE pos       : INTEGER := (-1);
+    FUNCTION find (synd_vec : STD_LOGIC_VECTOR) RETURN INTEGER IS
+        VARIABLE pos            : INTEGER := (-1);
     BEGIN
-        FOR i IN REF_TABLE'RANGE LOOP
-            IF (REF_TABLE(i) = val) THEN
+        FOR i IN CHECK_MATRIX_T'RANGE LOOP
+            IF (CHECK_MATRIX_T(i) = synd_vec) THEN
                 pos := i;
             END IF;
         END LOOP;
         RETURN pos;
     END FUNCTION;
 
-    FUNCTION syndrome (lin : CODEWORD_LINE) RETURN INTEGER IS
-        VARIABLE synd_vec      : BIT_VECTOR(0 TO CHECK_LENGTH);
+    FUNCTION syndrome (lin : CODEWORD_LINE) RETURN STD_LOGIC_VECTOR IS
+        VARIABLE synd_vec      : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH);
     BEGIN
         synd_vec := (OTHERS => '0');
         FOR col IN lin'RANGE LOOP
@@ -39,23 +45,42 @@ PACKAGE BODY decoder_utils IS
             END LOOP;
         END LOOP;
 
-        RETURN to_integer(unsigned(to_stdlogicvector(synd_vec)));
+        RETURN synd_vec;
+    END FUNCTION;
+
+    FUNCTION syndrome_to_flip_pattern (synd_vec : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH)) RETURN CODEWORD_LINE IS
+        VARIABLE pattern                            : CODEWORD_LINE;
+
+    BEGIN
+        FOR i IN pattern'RANGE LOOP
+            pattern(i) := and_reduce(synd_vec XOR (NOT CHECK_MATRIX_T(i)));
+        END LOOP;
+        RETURN pattern;
     END FUNCTION;
 
     PROCEDURE line_decode (
         VARIABLE lin       : IN CODEWORD_LINE;
         VARIABLE err_exist : OUT BOOLEAN;
-        VARIABLE err_pos   : OUT INTEGER -- err_pos大于等于0时表示该错误可纠正
+        VARIABLE err_pos   : OUT INTEGER
     ) IS
-        VARIABLE dsyn : INTEGER;
-        VARIABLE pos  : INTEGER := (-1);
+        VARIABLE synd_vec : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH);
+        VARIABLE pos      : INTEGER := (-1);
     BEGIN
-        dsyn      := syndrome(lin);
-        err_exist := dsyn /= 0;
+        synd_vec  := syndrome(lin);
+        err_exist := synd_vec /= synd_no_err;
         IF err_exist THEN
-            err_pos := find(dsyn);
+            err_pos := find(synd_vec);
         END IF;
     END PROCEDURE;
-
-
+    PROCEDURE line_decode_pattern (
+        VARIABLE lin         : IN CODEWORD_LINE;
+        VARIABLE err_exist   : OUT BOOLEAN;
+        VARIABLE err_pattern : OUT CODEWORD_LINE
+    ) IS
+        VARIABLE synd_vec : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH);
+    BEGIN
+        synd_vec    := syndrome(lin);
+        err_exist   := synd_vec /= synd_no_err;
+        err_pattern := syndrome_to_flip_pattern(synd_vec);
+    END PROCEDURE;
 END PACKAGE BODY;

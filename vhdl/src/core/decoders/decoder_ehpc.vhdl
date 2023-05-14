@@ -24,10 +24,10 @@ ARCHITECTURE rtl OF decoder_ehpc IS
 BEGIN
 
     PROCESS (clk)
-        VARIABLE row_vector    : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
-        VARIABLE col_vector    : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
-        VARIABLE row_uncorrect : bit_vector(codeIn'RANGE)    := (OTHERS => '0');
-        VARIABLE col_uncorrect : bit_vector(codeIn'RANGE(1)) := (OTHERS => '0');
+        VARIABLE row_vector    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+        VARIABLE col_vector    : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
+        VARIABLE row_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
+        VARIABLE col_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
         VARIABLE col_err_pos   : int_array(codeIn'RANGE(1))  := (OTHERS => 0);
         VARIABLE transposeFlag : BOOLEAN                     := false;
         VARIABLE code          : CODEWORD_MAT;
@@ -47,7 +47,7 @@ BEGIN
             RETURN false;
         END;
 
-        FUNCTION sum_vec(vec1 : bit_vector; vec2 : bit_vector) RETURN INTEGER IS
+        FUNCTION sum_vec(vec1 : STD_LOGIC_VECTOR; vec2 : STD_LOGIC_VECTOR) RETURN INTEGER IS
             VARIABLE result : INTEGER := 0;
         BEGIN
             FOR i IN vec1'RANGE LOOP

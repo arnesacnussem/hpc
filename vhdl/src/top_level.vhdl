@@ -13,18 +13,18 @@ ENTITY top_level IS
         -- 默认：位宽为1
         SERIAL_MSG_RATIO  : POSITIVE    := MSG_SERIAL'length;
         SERIAL_CODE_RATIO : POSITIVE    := CODEWORD_SERIAL'length;
-        IN_BUFFER         : BIT         := '1';
-        OUT_FILL          : BIT         := '0';
+        IN_BUFFER         : STD_LOGIC         := '1';
+        OUT_FILL          : STD_LOGIC         := '0';
         DECODER_TYPE      : DecoderType := DUMMY
     );
     PORT (
         clk      : IN STD_LOGIC := '0';
         dec_en   : IN STD_LOGIC := '0';
         enc_en   : IN STD_LOGIC := '0';
-        msg_in   : IN BIT_VECTOR(0 TO MSG_SERIAL'length / SERIAL_MSG_RATIO - 1);
-        code_in  : IN BIT_VECTOR(0 TO CODEWORD_SERIAL'length / SERIAL_CODE_RATIO - 1);
-        code_out : OUT BIT_VECTOR(0 TO CODEWORD_SERIAL'length / SERIAL_CODE_RATIO - 1);
-        msg_out  : OUT BIT_VECTOR(0 TO MSG_SERIAL'length / SERIAL_MSG_RATIO - 1);
+        msg_in   : IN STD_LOGIC_VECTOR(0 TO MSG_SERIAL'length / SERIAL_MSG_RATIO - 1);
+        code_in  : IN STD_LOGIC_VECTOR(0 TO CODEWORD_SERIAL'length / SERIAL_CODE_RATIO - 1);
+        code_out : OUT STD_LOGIC_VECTOR(0 TO CODEWORD_SERIAL'length / SERIAL_CODE_RATIO - 1);
+        msg_out  : OUT STD_LOGIC_VECTOR(0 TO MSG_SERIAL'length / SERIAL_MSG_RATIO - 1);
         enc_rdy  : OUT STD_LOGIC;
         dec_rdy  : OUT STD_LOGIC
     );
