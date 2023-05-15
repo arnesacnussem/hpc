@@ -19,7 +19,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
         if rError_exist == 1
             row1_vector(i) = 1;
-            
+
             row_uncorrect(i) = 1 - rCorrectable;
         end
 
@@ -34,6 +34,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
             col_uncorrect(j) = 1 - cCorrectable;
             col1_vector(j) = 1;
         end
+
     end
 
     %Compare_vector = [row1_vector;row_uncorrect;col_uncorrect;col1_vector];
@@ -42,7 +43,6 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
         rec = rec';
         flag = 1;
     end
-
 
     if flag ~= 1
         % 进行擦除 sum_vec_1 == sum_vec_2
@@ -58,10 +58,13 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
                 % CHK_CRLOOP
                 for i = 1:s2
+
                     for j = 1:s1
                         rec(rr(i), cc(j)) = 1 - rec(rr(i), cc(j));
                     end
+
                 end
+
             end
 
         end
@@ -99,8 +102,8 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
             col_vector(j) = 1;
 
             if cCorrectable == 1
-            % 把这个column error，site。变成一个二维数组，这样每一行。就是现在的这个元素。
-            % 每一行中值为1的就是现在的 error_site。
+                % 把这个column error，site。变成一个二维数组，这样每一行。就是现在的这个元素。
+                % 每一行中值为1的就是现在的 error_site。
                 col_error_site(j) = cError_site;
 
                 if row_vector(cError_site) == 0
@@ -130,8 +133,9 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
         end
 
-    else % CHK_CR2_LOOP_2
-        
+    else % ehpc_2r3c
+
+        % ehpc_2r3c_es_handler
         for i = 1:c
 
             if col_error_site(i) ~= 0
@@ -140,7 +144,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
         end
 
-        % CHK_CR2_LOOP_2S
+        % ehpc_2r3c_main
         % Third step decoding: row decoding and generate col_vector
         for i = 1:r
             rrec = rec(i, :);
@@ -162,6 +166,8 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
                 end
 
+            else
+                rec(i, :) = rec(i, :)
             end
 
         end

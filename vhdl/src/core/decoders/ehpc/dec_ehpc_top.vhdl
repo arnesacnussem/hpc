@@ -17,7 +17,7 @@ ENTITY dec_ehpc_top IS
 END ENTITY;
 ARCHITECTURE rtl OF dec_ehpc_top IS
     TYPE int_array IS ARRAY (NATURAL RANGE <>) OF INTEGER;
-    TYPE state_t IS (COPY, CHK_CR1, ERASE, VEC_CHK, CHK_CR2, VEC_RST);
+    TYPE state_t IS (COPY, CHK_CR1, ERASE, VEC_CHK, CHK_CR2, VEC_RST, C2R3C);
     TYPE state_map IS ARRAY(state_t RANGE <>) OF STD_LOGIC;
     SIGNAL state : state_t := COPY;
     SIGNAL clock : state_map(state_t'left TO state_t'right);
@@ -30,17 +30,18 @@ ARCHITECTURE rtl OF dec_ehpc_top IS
     -- internal connections
     SIGNAL link_erase   : CODEWORD_MAT;
     SIGNAL link_chk_cr2 : CODEWORD_MAT;
+    SIGNAL link_2r3c    : CODEWORD_MAT;
     SIGNAL bus_codeword : CODEWORD_MAT;
 
     SIGNAL row_vector    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_vector    : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
     SIGNAL row_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
-    SIGNAL col_err_pos   : int_array(codeIn'RANGE(1))  := (OTHERS => 0);
-    SIGNAL col_count     : NATURAL                     := 0;
-    SIGNAL row_count     : NATURAL                     := 0;
-    SIGNAL col_sum       : NATURAL                     := 0;
-    SIGNAL row_sum       : NATURAL                     := 0;
+    SIGNAL col_err_site  : CODEWORD_MAT;
+    SIGNAL col_count     : NATURAL := 0;
+    SIGNAL row_count     : NATURAL := 0;
+    SIGNAL col_sum       : NATURAL := 0;
+    SIGNAL row_sum       : NATURAL := 0;
 
     -- CHK_CR1
     SIGNAL row_vector_cr1    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
@@ -181,6 +182,20 @@ BEGIN
             row_vector    => row_vector_cr2,
             col_vector    => col_vector_cr2,
             row_uncorrect => row_uncorrect_cr2,
-            col_uncorrect => col_uncorrect_cr2
+            col_uncorrect => col_uncorrect_cr2,
+            col_err_site  => col_err_site
         );
+
+    ehpc_2r3c_inst : ENTITY work.ehpc_2r3c
+        PORT MAP(
+            clk   => clock(C2R3C),
+            reset => reset(C2R3C),
+            ready => rdy(C2R3C),
+
+            rec           => link_chk_cr2,
+            recOut        => link_2r3c,
+            col_uncorrect => col_uncorrect_cr2,
+            col_err_site  => col_err_site
+        );
+
 END ARCHITECTURE rtl;

@@ -15,10 +15,10 @@ PACKAGE decoder_utils IS
     FUNCTION find (synd_vec                     : STD_LOGIC_VECTOR) RETURN INTEGER;
     FUNCTION syndrome (lin                      : CODEWORD_LINE) RETURN STD_LOGIC_VECTOR;
     FUNCTION syndrome_to_flip_pattern (synd_vec : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH)) RETURN CODEWORD_LINE;
-    PROCEDURE line_decode_pattern (
-        VARIABLE lin         : IN CODEWORD_LINE;
-        VARIABLE err_exist   : OUT BOOLEAN;
-        VARIABLE err_pattern : OUT CODEWORD_LINE
+    PROCEDURE line_decode_mask (
+        VARIABLE lin       : IN CODEWORD_LINE;
+        VARIABLE err_exist : OUT BOOLEAN;
+        VARIABLE err_mask  : OUT CODEWORD_LINE
     );
     CONSTANT synd_no_err : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH) := (OTHERS => '0');
 END PACKAGE;
@@ -72,15 +72,15 @@ PACKAGE BODY decoder_utils IS
             err_pos := find(synd_vec);
         END IF;
     END PROCEDURE;
-    PROCEDURE line_decode_pattern (
-        VARIABLE lin         : IN CODEWORD_LINE;
-        VARIABLE err_exist   : OUT BOOLEAN;
-        VARIABLE err_pattern : OUT CODEWORD_LINE
+    PROCEDURE line_decode_mask (
+        VARIABLE lin       : IN CODEWORD_LINE;
+        VARIABLE err_exist : OUT BOOLEAN;
+        VARIABLE err_mask  : OUT CODEWORD_LINE
     ) IS
         VARIABLE synd_vec : STD_LOGIC_VECTOR(0 TO CHECK_LENGTH);
     BEGIN
-        synd_vec    := syndrome(lin);
-        err_exist   := synd_vec /= synd_no_err;
-        err_pattern := syndrome_to_flip_pattern(synd_vec);
+        synd_vec  := syndrome(lin);
+        err_exist := synd_vec /= synd_no_err;
+        err_mask  := syndrome_to_flip_pattern(synd_vec);
     END PROCEDURE;
 END PACKAGE BODY;

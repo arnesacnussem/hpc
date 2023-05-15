@@ -18,12 +18,13 @@ ARCHITECTURE rtl OF ehpc_earse IS
 BEGIN
 
     PROCESS (clk)
-        VARIABLE temp : CODEWORD_MAT := rec;
+        VARIABLE temp : CODEWORD_MAT;
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
                 ready <= '0';
             ELSE
+                temp := rec;
                 FOR c IN col_vector'RANGE LOOP
                     FOR r IN row_vector'RANGE LOOP
                         IF col_vector(c) = '1' AND row_vector(r) = '1' THEN

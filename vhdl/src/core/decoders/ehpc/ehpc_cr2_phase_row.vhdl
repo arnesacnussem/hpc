@@ -26,9 +26,9 @@ ARCHITECTURE rtl OF ehpc_cr2_phase_row IS
 BEGIN
     cr2_gen : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
         proc_cr2_row : PROCESS (clk)
-            VARIABLE code_line   : CODEWORD_LINE;
-            VARIABLE err_exist   : BOOLEAN;
-            VARIABLE err_pattern : CODEWORD_LINE;
+            VARIABLE code_line : CODEWORD_LINE;
+            VARIABLE err_exist : BOOLEAN;
+            VARIABLE err_mask  : CODEWORD_LINE;
         BEGIN
             IF rising_edge(clk) THEN
                 IF reset = '1' THEN
@@ -37,13 +37,13 @@ BEGIN
                     row_uncorrect(i) <= '0';
                 ELSE
                     code_line := rec(i);
-                    line_decode_pattern(code_line, err_exist, err_pattern);
+                    line_decode_mask(code_line, err_exist, err_mask);
                     IF err_exist THEN
                         row_vector(i) <= '1';
-                        IF isAllSLVEqualTo(err_pattern, '0') THEN -- un-correctable
+                        IF isAllSLVEqualTo(err_mask, '0') THEN -- un-correctable
                             row_uncorrect(i) <= '1';
                         ELSE
-                            code_line := code_line XOR err_pattern;
+                            code_line := code_line XOR err_mask;
                         END IF;
                     END IF;
                     registers(i) <= code_line;

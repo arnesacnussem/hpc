@@ -29,10 +29,9 @@ ARCHITECTURE rtl OF ehpc_cr2_phase_column IS
 BEGIN
     cr2_gen : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
         proc_cr2_col : PROCESS (clk)
-            VARIABLE code_line   : CODEWORD_LINE;
-            VARIABLE err_exist   : BOOLEAN;
-            VARIABLE err_pattern : CODEWORD_LINE;
-            VARIABLE col_err_reg : CODEWORD_LINE := (OTHERS => '0');
+            VARIABLE code_line    : CODEWORD_LINE;
+            VARIABLE err_exist    : BOOLEAN;
+            VARIABLE err_mask_reg : CODEWORD_LINE;
         BEGIN
             IF rising_edge(clk) THEN
                 IF reset = '1' THEN
@@ -42,21 +41,20 @@ BEGIN
                     err_mask(i)      <= (OTHERS => '0');
                 ELSE
                     code_line := rec(i);
-                    line_decode_pattern(code_line, err_exist, err_pattern);
+                    line_decode_mask(code_line, err_exist, err_mask_reg);
                     IF err_exist THEN
                         col_vector(i) <= '1';
-                        IF isAllSLVEqualTo(err_pattern, '0') THEN
+                        IF isAllSLVEqualTo(err_mask_reg, '0') THEN
                             col_uncorrect(i) <= '1';
                         ELSE
-                            col_err_reg := err_pattern;
-                            IF isAllSLVEqualTo(row_vector AND (NOT err_pattern), '0') THEN
+                            IF isAllSLVEqualTo(row_vector AND (NOT err_mask_reg), '0') THEN
                                 col_uncorrect(i) <= '0';
                             ELSE
                                 col_uncorrect(i) <= '1';
                             END IF;
                         END IF;
                     END IF;
-                    err_mask(i) <= err_pattern;
+                    err_mask(i) <= err_mask_reg;
                     rdy(i)      <= '1';
                 END IF;
             END IF;

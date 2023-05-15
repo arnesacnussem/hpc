@@ -20,7 +20,8 @@ ENTITY ehpc_cr2 IS
         row_vector    : OUT STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
         col_vector    : OUT STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
         row_uncorrect : OUT STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE)    := (OTHERS => '0');
-        col_uncorrect : OUT STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0')
+        col_uncorrect : OUT STD_LOGIC_VECTOR(CODEWORD_MAT'RANGE(1)) := (OTHERS => '0');
+        col_err_site  : OUT CODEWORD_MAT
     );
 END ENTITY;
 
@@ -95,13 +96,15 @@ BEGIN
         );
     inst_col : ENTITY work.ehpc_cr2_phase_column
         PORT MAP(
-            clk           => clock(COLUMN),
-            reset         => reset,
-            ready         => rdy(COLUMN),
+            clk   => clock(COLUMN),
+            reset => reset,
+            ready => rdy(COLUMN),
+
             rec           => row_registers_t,
             row_vector    => row_vec_wire,
             col_vector    => col_vector,
-            col_uncorrect => col_uncorrect
+            col_uncorrect => col_uncorrect,
+            col_err_site  => col_err_site
         );
     row_vector <= row_vec_wire;
 END ARCHITECTURE rtl;

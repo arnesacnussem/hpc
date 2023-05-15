@@ -6,7 +6,6 @@ USE work.types.ALL;
 
 ENTITY mxio_transposer IS
     GENERIC (
-        useBypass : BOOLEAN := false;
         row_count : NATURAL := 0;
         col_count : NATURAL := 0
     );

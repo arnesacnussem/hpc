@@ -11,11 +11,18 @@ PACKAGE core_util IS
     TYPE CheckResultType IS(UNCHECKED, FAIL, GOOD);
 
     FUNCTION isAllSLVEqualTo (vec : STD_LOGIC_VECTOR; val : STD_LOGIC) RETURN BOOLEAN;
+    FUNCTION isAllSLVEqualToSIG (SIGNAL vec : STD_LOGIC_VECTOR; val : STD_LOGIC) RETURN BOOLEAN;
     FUNCTION and_reduce(vec : STD_LOGIC_VECTOR)RETURN STD_LOGIC;
 END PACKAGE;
 
 PACKAGE BODY core_util IS
     FUNCTION isAllSLVEqualTo(vec : STD_LOGIC_VECTOR; val : STD_LOGIC) RETURN BOOLEAN IS
+        CONSTANT all_bits : STD_LOGIC_VECTOR(vec'RANGE) := (OTHERS => val);
+    BEGIN
+        RETURN vec = all_bits;
+    END FUNCTION;
+    
+    FUNCTION isAllSLVEqualToSIG(SIGNAL vec : STD_LOGIC_VECTOR; val : STD_LOGIC) RETURN BOOLEAN IS
         CONSTANT all_bits : STD_LOGIC_VECTOR(vec'RANGE) := (OTHERS => val);
     BEGIN
         RETURN vec = all_bits;
