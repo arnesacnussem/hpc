@@ -4,6 +4,7 @@ USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.constants.ALL;
 USE work.mxio_util.ALL;
+USE work.ehpc_declare.ALL;
 
 ENTITY dec_ehpc_top IS
     PORT (
@@ -17,31 +18,39 @@ ENTITY dec_ehpc_top IS
 END ENTITY;
 ARCHITECTURE rtl OF dec_ehpc_top IS
     TYPE int_array IS ARRAY (NATURAL RANGE <>) OF INTEGER;
-    TYPE state_t IS (COPY, CHK_CR1, ERASE, VEC_CHK, CHK_CR2, VEC_RST, C2R3C);
-    TYPE state_map IS ARRAY(state_t RANGE <>) OF STD_LOGIC;
-    SIGNAL state : state_t := COPY;
-    SIGNAL clock : state_map(state_t'left TO state_t'right);
-    SIGNAL reset : state_map(state_t'left TO state_t'right);
-    SIGNAL rdy   : state_map(state_t'left TO state_t'right);
 
-    -- FSM control
-    CONSTANT components : NATURAL := 10;
+    SIGNAL state : ehpc_state_t := CHK_CR1;
+    SIGNAL clock : ehpc_state_map(ehpc_state_t'left TO ehpc_state_t'right);
+    SIGNAL rdy   : ehpc_state_map(ehpc_state_t'left TO ehpc_state_t'right);
 
-    -- internal connections
-    SIGNAL link_erase   : CODEWORD_MAT;
-    SIGNAL link_chk_cr2 : CODEWORD_MAT;
-    SIGNAL link_2r3c    : CODEWORD_MAT;
-    SIGNAL bus_codeword : CODEWORD_MAT;
+    -- codeword links
+    SIGNAL input_cr2   : CODEWORD_MAT;
+    SIGNAL input_erase : CODEWORD_MAT;
+    SIGNAL input_r3req : CODEWORD_MAT;
+
+    SIGNAL output_erase      : CODEWORD_MAT;
+    SIGNAL output_cr2        : CODEWORD_MAT;
+    SIGNAL output_2r3c       : CODEWORD_MAT;
+    SIGNAL output_r3req      : CODEWORD_MAT;
+    SIGNAL output_transposer : CODEWORD_MAT;
+
+    SIGNAL final_codeword : CODEWORD_MAT;
+
+    SIGNAL sel_erase      : STD_LOGIC := '0';
+    SIGNAL sel_cr2        : STD_LOGIC := '0';
+    SIGNAL sel_r3req      : STD_LOGIC := '0';
+    SIGNAL flag_transpose : STD_LOGIC := '0';
+
+    SIGNAL col_err_site : CODEWORD_MAT;
+    SIGNAL col_count    : NATURAL := 0;
+    SIGNAL row_count    : NATURAL := 0;
+    SIGNAL col_sum      : NATURAL := 0;
+    SIGNAL row_sum      : NATURAL := 0;
 
     SIGNAL row_vector    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_vector    : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
     SIGNAL row_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_uncorrect : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
-    SIGNAL col_err_site  : CODEWORD_MAT;
-    SIGNAL col_count     : NATURAL := 0;
-    SIGNAL row_count     : NATURAL := 0;
-    SIGNAL col_sum       : NATURAL := 0;
-    SIGNAL row_sum       : NATURAL := 0;
 
     -- CHK_CR1
     SIGNAL row_vector_cr1    : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
@@ -55,41 +64,6 @@ ARCHITECTURE rtl OF dec_ehpc_top IS
     SIGNAL row_uncorrect_cr2 : STD_LOGIC_VECTOR(codeIn'RANGE)    := (OTHERS => '0');
     SIGNAL col_uncorrect_cr2 : STD_LOGIC_VECTOR(codeIn'RANGE(1)) := (OTHERS => '0');
 BEGIN
-
-    -- this process also act as the memory controller
-    ehpc_fsm : PROCESS (clk)
-        IMPURE FUNCTION componentReady RETURN BOOLEAN IS
-        BEGIN
-            RETURN rdy(state) = '1';
-        END FUNCTION;
-    BEGIN
-        IF rising_edge(clk) THEN
-            CASE state IS
-                WHEN COPY =>
-                    bus_codeword <= codeIn;
-                    state        <= CHK_CR1;
-                WHEN CHK_CR1 =>
-                    IF componentReady THEN
-
-                    END IF;
-                WHEN CHK_CR2 =>
-                WHEN VEC_CHK =>
-                WHEN ERASE   =>
-                WHEN OTHERS  =>
-            END CASE;
-        END IF;
-    END PROCESS;
-
-    -- mux_codeword : PROCESS (state)
-    -- BEGIN
-    --     CASE state IS
-    --         WHEN COPY    =>
-    --         WHEN CHK_CR1 =>
-    --             bus_codeword <= codeIn;
-    --         WHEN OTHERS =>
-    --     END CASE;
-    -- END PROCESS;
-
     mux_clk : PROCESS (clk, state)
     BEGIN
         clock        <= (OTHERS => '0');
@@ -97,7 +71,7 @@ BEGIN
     END PROCESS;
 
     mux_vec : PROCESS (
-        state,
+        rdy,
         row_vector_cr1,
         col_vector_cr1,
         row_uncorrect_cr1,
@@ -108,77 +82,117 @@ BEGIN
         col_uncorrect_cr2
         )
     BEGIN
-        CASE state IS
-
-            WHEN CHK_CR1 =>
-                row_vector    <= row_vector_cr1;
-                col_vector    <= col_vector_cr1;
-                row_uncorrect <= row_uncorrect_cr1;
-                col_uncorrect <= col_uncorrect_cr1;
-
-            WHEN CHK_CR2 =>
-                row_vector    <= row_vector_cr2;
-                col_vector    <= col_vector_cr2;
-                row_uncorrect <= row_uncorrect_cr2;
-                col_uncorrect <= col_uncorrect_cr2;
-
-            WHEN OTHERS              =>
-                row_vector    <= (OTHERS => '0');
-                col_vector    <= (OTHERS => '0');
-                row_uncorrect <= (OTHERS => '0');
-                col_uncorrect <= (OTHERS => '0');
-        END CASE;
+        IF rdy(CHK_CR2) = '1' THEN
+            row_vector    <= row_vector_cr2;
+            col_vector    <= col_vector_cr2;
+            row_uncorrect <= row_uncorrect_cr2;
+            col_uncorrect <= col_uncorrect_cr2;
+        ELSIF rdy(CHK_CR1) = '1' THEN
+            row_vector    <= row_vector_cr1;
+            col_vector    <= col_vector_cr1;
+            row_uncorrect <= row_uncorrect_cr1;
+            col_uncorrect <= col_uncorrect_cr1;
+        ELSE
+            row_vector    <= (OTHERS => '0');
+            col_vector    <= (OTHERS => '0');
+            row_uncorrect <= (OTHERS => '0');
+            col_uncorrect <= (OTHERS => '0');
+        END IF;
     END PROCESS;
 
-    ehpc_cr1_inst : ENTITY work.ehpc_cr1
+    ehpc_fsm_inst : ENTITY work.ehpc_fsm
+        PORT MAP(
+            clk            => clk,
+            reset          => rst,
+            ready          => ready,
+            state          => state,
+            rdy            => rdy,
+            col_count      => col_count,
+            row_count      => row_count,
+            col_sum        => col_sum,
+            row_sum        => row_sum,
+            flag_transpose => flag_transpose,
+            sel_cr2        => sel_cr2,
+            sel_erase      => sel_erase,
+            sel_r3req      => sel_r3req
+        );
+
+    cmpt_cr1 : ENTITY work.ehpc_cr1
         PORT MAP(
             clk   => clock(CHK_CR1),
-            reset => reset(CHK_CR1),
+            reset => rst,
             ready => rdy(CHK_CR1),
 
-            rec           => bus_codeword,
+            rec           => codeIn,
             row_vector    => row_vector_cr1,
             col_vector    => col_vector_cr1,
             row_uncorrect => row_uncorrect_cr1,
             col_uncorrect => col_uncorrect_cr1
         );
 
-    ehpc_earse_inst : ENTITY work.ehpc_earse
+    t_flag_1 : ENTITY work.bypassable_transposer
+        GENERIC MAP(
+            row_count => CODEWORD_LENGTH,
+            col_count => CODEWORD_LENGTH
+        )
+        PORT MAP(
+            input  => codeIn,
+            output => output_transposer,
+            bypass => NOT flag_transpose
+        );
+
+    mux_erase_input : ENTITY work.mxio_mux
+        PORT MAP(
+            sel     => sel_erase,
+            input_0 => output_transposer,
+            input_1 => output_cr2,
+            output  => input_erase
+        );
+    mux_cr2_input : ENTITY work.mxio_mux
+        PORT MAP(
+            sel     => sel_cr2,
+            input_0 => output_transposer,
+            input_1 => output_erase,
+            output  => input_cr2
+        );
+
+    cmpt_erase : ENTITY work.ehpc_earse
         PORT MAP(
             clk   => clock(ERASE),
-            reset => reset(ERASE),
+            reset => rst,
             ready => rdy(ERASE),
 
-            rec        => bus_codeword,
-            recOut     => link_erase,
+            rec        => input_erase,
+            recOut     => output_erase,
             row_vector => row_vector,
             col_vector => col_vector
         );
 
-    ehpc_vector_chk_inst : ENTITY work.ehpc_vector_chk
+    cmpt_vec_chk : ENTITY work.ehpc_vector_chk
         PORT MAP(
             row_vector    => row_vector,
             col_vector    => col_vector,
             row_uncorrect => row_uncorrect,
             col_uncorrect => col_uncorrect,
-            col_count     => col_count,
-            row_count     => row_count,
-            col_sum       => col_sum,
-            row_sum       => row_sum,
+
+            col_count => col_count,
+            row_count => row_count,
+            col_sum   => col_sum,
+            row_sum   => row_sum,
 
             clk   => clock(VEC_CHK),
-            reset => reset(VEC_CHK),
+            reset => rst,
             ready => rdy(VEC_CHK)
         );
 
-    ehpc_cr2_inst : ENTITY work.ehpc_cr2
+    cmpt_cr2 : ENTITY work.ehpc_cr2
         PORT MAP(
             clk   => clock(CHK_CR2),
-            reset => reset(CHK_CR2),
+            reset => rst,
             ready => rdy(CHK_CR2),
 
-            rec           => bus_codeword,
-            recOut        => link_chk_cr2,
+            rec           => input_cr2,
+            recOut        => output_cr2,
             row_vector    => row_vector_cr2,
             col_vector    => col_vector_cr2,
             row_uncorrect => row_uncorrect_cr2,
@@ -186,16 +200,52 @@ BEGIN
             col_err_site  => col_err_site
         );
 
-    ehpc_2r3c_inst : ENTITY work.ehpc_2r3c
+    cmpt_2r3c : ENTITY work.ehpc_2r3c
         PORT MAP(
             clk   => clock(C2R3C),
-            reset => reset(C2R3C),
+            reset => rst,
             ready => rdy(C2R3C),
 
-            rec           => link_chk_cr2,
-            recOut        => link_2r3c,
+            rec           => output_cr2,
+            recOut        => output_2r3c,
             col_uncorrect => col_uncorrect_cr2,
             col_err_site  => col_err_site
+        );
+
+    mux_r3req : ENTITY work.mxio_mux
+        PORT MAP(
+            sel     => sel_r3req,
+            input_0 => output_erase,
+            input_1 => output_2r3c,
+            output  => input_r3req
+        );
+
+    cmpt_r3req : ENTITY work.ehcp_r3req
+        PORT MAP(
+            clk   => clock(R3REQ),
+            reset => rst,
+            ready => rdy(R3REQ),
+
+            rec     => input_r3req,
+            recOut  => output_r3req,
+            has_err => has_err
+        );
+    t_flag_2 : ENTITY work.bypassable_transposer
+        GENERIC MAP(
+            row_count => CODEWORD_LENGTH,
+            col_count => CODEWORD_LENGTH
+        )
+        PORT MAP(
+            input  => output_r3req,
+            output => final_codeword,
+            bypass => NOT flag_transpose
+        );
+
+    message_extractor_inst : ENTITY work.message_extractor
+        PORT MAP(
+            trigger => rdy(R3REQ),
+            rec     => final_codeword,
+            msg     => msg
         );
 
 END ARCHITECTURE rtl;

@@ -24,49 +24,47 @@ ENTITY ehpc_cr2_phase_column IS
 END ENTITY;
 
 ARCHITECTURE rtl OF ehpc_cr2_phase_column IS
-    SIGNAL rdy      : STD_LOGIC_VECTOR(rec'RANGE) := (OTHERS => '0');
-    SIGNAL err_mask : CODEWORD_MAT                := (OTHERS => (OTHERS => '0'));
+    SIGNAL rdy         : STD_LOGIC_VECTOR(rec'RANGE) := (OTHERS => '0');
+    SIGNAL mask        : CODEWORD_MAT;
+    SIGNAL mark        : CODEWORD_LINE;
+    SIGNAL mask_reduce : CODEWORD_LINE;
+
 BEGIN
+
+    record_to_error_mask_inst : ENTITY work.record_to_error_mask
+        GENERIC MAP(
+            rotate_input  => false,
+            rotate_output => false
+        )
+        PORT MAP(
+            rec         => rec,
+            mask        => mask,
+            mark        => mark,
+            mask_reduce => mask_reduce
+        );
+
     cr2_gen : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
         proc_cr2_col : PROCESS (clk)
-            VARIABLE code_line    : CODEWORD_LINE;
-            VARIABLE err_exist    : BOOLEAN;
-            VARIABLE err_mask_reg : CODEWORD_LINE;
         BEGIN
             IF rising_edge(clk) THEN
                 IF reset = '1' THEN
                     rdy(i)           <= '0';
                     col_vector(i)    <= '0';
                     col_uncorrect(i) <= '0';
-                    err_mask(i)      <= (OTHERS => '0');
                 ELSE
-                    code_line := rec(i);
-                    line_decode_mask(code_line, err_exist, err_mask_reg);
-                    IF err_exist THEN
+                    IF mark(i) = '1' THEN
                         col_vector(i) <= '1';
-                        IF isAllSLVEqualTo(err_mask_reg, '0') THEN
-                            col_uncorrect(i) <= '1';
+                        IF mask_reduce(i) = '1' THEN
+                            col_uncorrect(i) <= or_reduce(row_vector AND (NOT mask(i)));
                         ELSE
-                            IF isAllSLVEqualTo(row_vector AND (NOT err_mask_reg), '0') THEN
-                                col_uncorrect(i) <= '0';
-                            ELSE
-                                col_uncorrect(i) <= '1';
-                            END IF;
+                            col_uncorrect(i) <= '1';
                         END IF;
                     END IF;
-                    err_mask(i) <= err_mask_reg;
-                    rdy(i)      <= '1';
+                    rdy(i) <= '1';
                 END IF;
             END IF;
         END PROCESS;
     END GENERATE;
-    col_err_site <= err_mask;
-    state_check : PROCESS (rdy)
-    BEGIN
-        IF isAllSLVEqualTo(rdy, '1') THEN
-            ready <= '1';
-        ELSE
-            ready <= '0';
-        END IF;
-    END PROCESS;
+    col_err_site        <= mask;
+    state_check : ready <= and_reduce(rdy);
 END ARCHITECTURE rtl;

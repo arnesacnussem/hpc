@@ -6,7 +6,7 @@ ENTITY ehpc_earse IS
     PORT (
         clk   : IN STD_LOGIC;
         reset : IN STD_LOGIC;
-        ready : OUT STD_LOGIC;
+        ready : OUT STD_LOGIC := '0';
 
         rec        : IN CODEWORD_MAT;
         recOut     : OUT CODEWORD_MAT;
@@ -35,6 +35,7 @@ BEGIN
                     END LOOP;
                 END LOOP;
                 recOut <= temp;
+                ready  <= '1';
             END IF;
         END IF;
     END PROCESS;

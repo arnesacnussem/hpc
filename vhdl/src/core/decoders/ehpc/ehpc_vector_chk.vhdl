@@ -20,7 +20,7 @@ ENTITY ehpc_vector_chk IS
 
         clk   : IN STD_LOGIC;
         reset : IN STD_LOGIC;
-        ready : OUT STD_LOGIC
+        ready : OUT STD_LOGIC := '0'
     );
 END ENTITY ehpc_vector_chk;
 
@@ -60,6 +60,7 @@ BEGIN
             ELSE
                 VectorCS(vec1 => row_vector, vec2 => row_uncorrect, sum => row_sum, cnt => row_count);
                 VectorCS(vec1 => col_vector, vec2 => col_uncorrect, sum => col_sum, cnt => col_count);
+                ready <= '1';
             END IF;
         END IF;
     END PROCESS;

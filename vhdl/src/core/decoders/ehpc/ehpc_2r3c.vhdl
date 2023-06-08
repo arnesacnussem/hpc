@@ -23,6 +23,7 @@ ARCHITECTURE rtl OF ehpc_2r3c IS
     SIGNAL post_es       : CODEWORD_MAT;
     SIGNAL err_mask      : CODEWORD_MAT;
     SIGNAL err_mark      : CODEWORD_LINE;
+    SIGNAL mask_reduce   : CODEWORD_LINE;
     SIGNAL post_row_corr : CODEWORD_MAT;
 
 BEGIN
@@ -39,9 +40,10 @@ BEGIN
             rotate_output => false
         )
         PORT MAP(
-            rec  => post_es,
-            mask => err_mask,
-            mark => err_mark
+            rec         => post_es,
+            mask        => err_mask,
+            mark        => err_mark,
+            mask_reduce => mask_reduce
         );
 
     proc_2r3c_main : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
@@ -55,7 +57,7 @@ BEGIN
                     recOut(i) <= (OTHERS => '0');
                 ELSE
                     IF err_mark(i) = '1' THEN
-                        IF NOT isAllSLVEqualToSIG(err_mask(i), '0') THEN
+                        IF mask_reduce(i) = '1' THEN
                             recOut(i) <= post_es(i) XOR err_mask(i);
                         ELSE
                             recOut(i) <= post_es(i) XOR col_uncorrect;
@@ -69,12 +71,5 @@ BEGIN
         END PROCESS;
     END GENERATE;
 
-    state_check : PROCESS (rdy)
-    BEGIN
-        IF isAllSLVEqualTo(rdy, '1') THEN
-            ready <= '1';
-        ELSE
-            ready <= '0';
-        END IF;
-    END PROCESS;
+    state_check : ready <= and_reduce(rdy);
 END ARCHITECTURE rtl;

@@ -19,22 +19,25 @@ ENTITY ehpc_cr1_phase IS
 END ENTITY ehpc_cr1_phase;
 
 ARCHITECTURE rtl OF ehpc_cr1_phase IS
-    SIGNAL rdy : STD_LOGIC_VECTOR(rec'RANGE) := (OTHERS => '0');
+    SIGNAL rdy  : STD_LOGIC_VECTOR(rec'RANGE) := (OTHERS => '0');
+    SIGNAL mask : CODEWORD_MAT;
+    SIGNAL mark : CODEWORD_LINE;
 BEGIN
-    state_check : PROCESS (rdy)
-    BEGIN
-        IF isAllSLVEqualTo(rdy, '1') THEN
-            ready <= '1';
-        ELSE
-            ready <= '0';
-        END IF;
-    END PROCESS;
+    state_check : ready <= and_reduce(rdy);
+
+    decode_inst : ENTITY work.record_to_error_mask
+        GENERIC MAP(
+            rotate_input  => false,
+            rotate_output => false
+        )
+        PORT MAP(
+            rec  => rec,
+            mask => mask,
+            mark => mark
+        );
 
     cr1_gen : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
         proc_row : PROCESS (clk)
-            VARIABLE code_line : CODEWORD_LINE;
-            VARIABLE err_exist : BOOLEAN;
-            VARIABLE err_mask  : CODEWORD_LINE;
         BEGIN
             IF rising_edge(clk) THEN
                 IF reset = '1' THEN
@@ -42,15 +45,12 @@ BEGIN
                     vector(i)    <= '0';
                     uncorrect(i) <= '0';
                 ELSE
-                    code_line := rec(i);
-                    line_decode_mask(code_line, err_exist, err_mask);
-                    IF err_exist THEN
-                        vector(i) <= '1';
-                        IF isAllSLVEqualTo(err_mask, '0') THEN
-                            uncorrect(i) <= '1';
-                        ELSE
-                            uncorrect(i) <= '0';
-                        END IF;
+                    IF mark(i) = '1' THEN
+                        vector(i)    <= '1';
+                        uncorrect(i) <= NOT or_reduce(mask(i));
+                    ELSE
+                        vector(i)    <= '0';
+                        uncorrect(i) <= '0';
                     END IF;
                     rdy(i) <= '1';
                 END IF;

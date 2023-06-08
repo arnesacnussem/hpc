@@ -1,6 +1,5 @@
 function [output, req] = EHPC_decoding(H, rec, table, code)
     [r, c] = size(rec);
-    org = rec;
     req = 0;
     row_uncorrect = zeros(1, r); %marked each row that has two errors
     col_uncorrect = zeros(1, c); %marked each column that has two errors
@@ -37,6 +36,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
     end
 
+    % need_transpose
     %Compare_vector = [row1_vector;row_uncorrect;col_uncorrect;col1_vector];
     if sum(col1_vector + col_uncorrect) > sum(row1_vector + row_uncorrect) || length(find(col1_vector ~= 0)) > length(find(row1_vector ~= 0))
         % CHK_SET_FLAG
@@ -44,9 +44,9 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
         flag = 1;
     end
 
-    if flag ~= 1
+    % not_transpose
+    if flag = 0
         % 进行擦除 sum_vec_1 == sum_vec_2
-        % CHK_CRFLAG
         if sum(col1_vector + col_uncorrect) == sum(row1_vector + row_uncorrect) && length(find(col1_vector ~= 0)) == length(find(row1_vector ~= 0))
 
             %擦除区域内的错误个数大于一半以上
@@ -75,6 +75,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
     row_uncorrect = 0 * row_uncorrect;
     col_vector = zeros(1, r);
     col_uncorrect = 0 * col_uncorrect;
+    % ehpc_cr2
     % First step decoding: row decoding and generate row_vector
     for i = 1:r
         rrec = rec(i, :);
@@ -84,7 +85,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
             row_vector(i) = 1;
 
             if rCorrectable == 1
-                rec(i, rError_site) = 1 - rec(i, rError_site);
+                rec(i, rError_site) = 1 - correctablerec(i, rError_site);
             else
                 row_uncorrect(i) = 1;
             end
@@ -174,7 +175,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
     end
 
-    % CHK_R3
+    % row_chk
     for i = 1:r
         rrec = rec(i, :);
         [rError_exist, rCorrectable, rError_site] = Hdecode(rrec, H, table);
@@ -191,7 +192,7 @@ function [output, req] = EHPC_decoding(H, rec, table, code)
 
     end
 
-    % CHK_REQ
+    % if_no_req
     if req == 0
 
         for i = 1:r

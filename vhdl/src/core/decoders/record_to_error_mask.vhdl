@@ -5,6 +5,7 @@ USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.constants.ALL;
 USE work.decoder_utils.ALL;
+USE work.core_util.ALL;
 
 ENTITY record_to_error_mask IS
     GENERIC (
@@ -12,9 +13,10 @@ ENTITY record_to_error_mask IS
         rotate_output : BOOLEAN := false  -- transpose the output error mask matrix
     );
     PORT (
-        rec  : IN CODEWORD_MAT;
-        mask : OUT CODEWORD_MAT;
-        mark : OUT CODEWORD_LINE
+        rec         : IN CODEWORD_MAT;
+        mask        : OUT CODEWORD_MAT;
+        mark        : OUT CODEWORD_LINE;
+        mask_reduce : OUT CODEWORD_LINE
     );
 END ENTITY;
 ARCHITECTURE rtl OF record_to_error_mask IS
@@ -33,36 +35,38 @@ BEGIN
             );
     ELSE GENERATE
             internal_in <= rec;
-        END GENERATE;
+        END;
+    END GENERATE;
 
-        decode_proc : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
-            PROCESS (internal_in)
-                VARIABLE code_line : CODEWORD_LINE;
-                VARIABLE err_exist : BOOLEAN;
-                VARIABLE err_mask  : CODEWORD_LINE;
-            BEGIN
-                code_line := internal_in(i);
-                line_decode_mask(code_line, err_exist, err_mask);
-                internal_out(i) <= err_mask;
-                IF err_exist THEN
-                    mark(i) <= '1';
-                ELSE
-                    mark(i) <= '0';
-                END IF;
-            END PROCESS;
-        END GENERATE;
+    decode_proc : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
+        PROCESS (internal_in)
+            VARIABLE code_line : CODEWORD_LINE;
+            VARIABLE err_exist : BOOLEAN;
+            VARIABLE err_mask  : CODEWORD_LINE;
+        BEGIN
+            code_line := internal_in(i);
+            line_decode_mask(code_line, err_exist, err_mask);
+            internal_out(i) <= err_mask;
+            mask_reduce(i)  <= or_reduce(err_mask);
+            IF err_exist THEN
+                mark(i) <= '1';
+            ELSE
+                mark(i) <= '0';
+            END IF;
+        END PROCESS;
+    END GENERATE;
 
-        rotate_out : IF rotate_output GENERATE
-            transposer_output : ENTITY work.mxio_transposer
-                GENERIC MAP(
-                    row_count => CODEWORD_LENGTH,
-                    col_count => CODEWORD_LENGTH
-                )
-                PORT MAP(
-                    input  => internal_out,
-                    output => mask
-                );
-        ELSE GENERATE
-                mask <= internal_out;
-            END GENERATE;
-        END ARCHITECTURE rtl;
+    rotate_out : IF rotate_output GENERATE
+        transposer_output : ENTITY work.mxio_transposer
+            GENERIC MAP(
+                row_count => CODEWORD_LENGTH,
+                col_count => CODEWORD_LENGTH
+            )
+            PORT MAP(
+                input  => internal_out,
+                output => mask
+            );
+    ELSE GENERATE
+            mask <= internal_out;
+        END GENERATE;
+    END ARCHITECTURE rtl;

@@ -1,7 +1,5 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
-USE ieee.numeric_bit.ALL;
 USE work.types.ALL;
 
 ENTITY mxio_transposer IS

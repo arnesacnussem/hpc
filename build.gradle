@@ -14,7 +14,7 @@ buildtimetracker {
 }
 import groovy.json.JsonSlurper
 
-def getNodeByName(String jsonString, String nodeName,String defaultVal) {
+def getNodeByName(String jsonString, String nodeName, String defaultVal) {
     def root = new JsonSlurper().parseText(jsonString)
     def node = root[nodeName]
     if (node == null) {
@@ -187,13 +187,21 @@ delete fileTree('.') {
     include 'hs_err_*.log'
 }
 
+task genTcl(type: Exec) {
+    dependsOn elaborate
+    commandLine 'python', 'scripts/tclgen.py', "${dir.out}/hierarchy.list", "${dir.out}/tcl.tcl", ghdl.topLevel
+
+    inputs.files fileTree(dir: '.', includes: ['scripts/tclgen.py', "${dir.out}/hierarchy.list", "${dir.out}/tcl.tcl"])
+}
+
 task copyToDist {
     dependsOn elaborate
+    dependsOn genTcl
 
     doLast {
         delete "${dir.out}/vhdl"
         copy {
-            from hierarchy.list(), 'out/build.txt'
+            from hierarchy.list(), "${dir.out}/build.txt", "${dir.out}/tcl.tcl"
             into "${dir.out}/vhdl"
         }
     }

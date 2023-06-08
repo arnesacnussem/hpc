@@ -16,17 +16,17 @@ with open(args.output_file, 'w') as f:
         f.write('vcom -work work -2008 "{}"\n'.format(os.path.basename(source)))
 
     f.write(f'''
-    
-    # Load testbench source
-    vcom -work work -2008 "{args.testbench}"
 
-    # Elaborate design
-    vsim -L work -L secureip -t 1ps -voptargs="+acc" work.{args.testbench.split('.vhdl')[0]}
-    log -r *
-    add wave *
-    # Run simulation
-    run -all
-    add wave *
-    wave zoom full
-    ''')
+# Load testbench source
+vcom -work work -2008 "{args.testbench}.vhdl"
+
+# Elaborate design
+vsim -L work -t 1ps -voptargs="+acc" work.{args.testbench.split('.vhdl')[0]}
+log -r *
+add wave *
+# Run simulation
+run 100ps
+add wave *
+wave zoom full
+''')
 

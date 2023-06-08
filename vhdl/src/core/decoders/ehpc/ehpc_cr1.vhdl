@@ -3,7 +3,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE work.types.ALL;
 USE work.constants.ALL;
-USE work.ehpc_declare.ALL;
+USE work.core_util.ALL;
 
 ENTITY ehpc_cr1 IS
     PORT (
@@ -20,7 +20,7 @@ ENTITY ehpc_cr1 IS
 END ENTITY;
 
 ARCHITECTURE rtl OF ehpc_cr1 IS
-    SIGNAL rdy   : phase_map(PHASES'left TO PHASES'right) := (OTHERS => '0');
+    SIGNAL rdy   : STD_LOGIC_VECTOR(0 TO 1);
     SIGNAL rec_t : CODEWORD_MAT;
 BEGIN
 
@@ -28,7 +28,7 @@ BEGIN
         PORT MAP(
             clk       => clk,
             reset     => reset,
-            ready     => rdy(ROW),
+            ready     => rdy(0),
             rec       => rec,
             vector    => row_vector,
             uncorrect => row_uncorrect
@@ -48,19 +48,11 @@ BEGIN
         PORT MAP(
             clk       => clk,
             reset     => reset,
-            ready     => rdy(COLUMN),
+            ready     => rdy(1),
             rec       => rec_t,
             vector    => col_vector,
             uncorrect => col_uncorrect
         );
 
-    state_check : PROCESS (rdy)
-        CONSTANT readySample : phase_map(PHASES'left TO PHASES'right) := (OTHERS => '1');
-    BEGIN
-        IF rdy = readySample THEN
-            ready <= '1';
-        ELSE
-            ready <= '0';
-        END IF;
-    END PROCESS;
+    state_check : ready <= rdy(0) AND rdy(1);
 END ARCHITECTURE rtl;

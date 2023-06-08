@@ -21,14 +21,27 @@ ENTITY ehpc_cr2_phase_row IS
 END ENTITY ehpc_cr2_phase_row;
 
 ARCHITECTURE rtl OF ehpc_cr2_phase_row IS
-    SIGNAL rdy       : STD_LOGIC_VECTOR(rec'RANGE) := (OTHERS => '0');
-    SIGNAL registers : CODEWORD_MAT;
+    SIGNAL rdy         : STD_LOGIC_VECTOR(rec'RANGE) := (OTHERS => '0');
+    SIGNAL registers   : CODEWORD_MAT;
+    SIGNAL mask        : CODEWORD_MAT;
+    SIGNAL mark        : CODEWORD_LINE;
+    SIGNAL mask_reduce : CODEWORD_LINE;
 BEGIN
+
+    decode_inst : ENTITY work.record_to_error_mask
+        GENERIC MAP(
+            rotate_input  => false,
+            rotate_output => false
+        )
+        PORT MAP(
+            rec         => rec,
+            mask        => mask,
+            mark        => mark,
+            mask_reduce => mask_reduce
+        );
     cr2_gen : FOR i IN 0 TO CODEWORD_LENGTH GENERATE
         proc_cr2_row : PROCESS (clk)
             VARIABLE code_line : CODEWORD_LINE;
-            VARIABLE err_exist : BOOLEAN;
-            VARIABLE err_mask  : CODEWORD_LINE;
         BEGIN
             IF rising_edge(clk) THEN
                 IF reset = '1' THEN
@@ -37,13 +50,12 @@ BEGIN
                     row_uncorrect(i) <= '0';
                 ELSE
                     code_line := rec(i);
-                    line_decode_mask(code_line, err_exist, err_mask);
-                    IF err_exist THEN
+                    IF mark(i) = '1' THEN
                         row_vector(i) <= '1';
-                        IF isAllSLVEqualTo(err_mask, '0') THEN -- un-correctable
-                            row_uncorrect(i) <= '1';
+                        IF mask_reduce(i) = '1' THEN
+                            code_line := rec(i) XOR mask(i);
                         ELSE
-                            code_line := code_line XOR err_mask;
+                            row_uncorrect(i) <= '1';
                         END IF;
                     END IF;
                     registers(i) <= code_line;
@@ -52,13 +64,6 @@ BEGIN
             END IF;
         END PROCESS;
     END GENERATE;
-    recOut <= registers;
-    state_check : PROCESS (rdy)
-    BEGIN
-        IF isAllSLVEqualTo(rdy, '1') THEN
-            ready <= '1';
-        ELSE
-            ready <= '0';
-        END IF;
-    END PROCESS;
+    recOut              <= registers;
+    state_check : ready <= and_reduce(rdy);
 END ARCHITECTURE rtl;

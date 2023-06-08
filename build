@@ -94,6 +94,7 @@ if not args.dry_run:
     fBuild = open("./out/build.txt", "w+")
     fBuild.write(f"argv={' '.join(sys.argv)}\n")
     fBuild.write(f"cmd={cmd_str}\n")
+    fBuild.flush()
     returned_value = subprocess.call(cmd_str, shell=True)
     fBuild.write(f"exit={returned_value}\n")
     exit(returned_value)
