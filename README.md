@@ -24,32 +24,17 @@ use docker image at [.devcontainer/Dockerfile](.devcontainer/Dockerfile)
 
 ### Decoders
 
-- [ ] First
-- [ ] Second
-- [ ] Third
+- [X] BAO3
+- [X] EHPC
+- [X] SHPC
 
 ### Designs
 
-- [ ] IO components
-- [ ] Encoding utilities
-- [ ] Decoding utilities
-- [ ] Test suit
+- [X] IO components
+- [X] Encoding utilities
+- [X] Decoding utilities
+- [X] Test suit
 
-### Features
+---
 
-- [ ] [Partial transmite](#partial-transmite)
-- [ ] [Auto transmite additional check bits](#auto-transmite-additional-check-bits)
-- [ ] [Parallel encoding/decoding]()
-- [ ] [Transmite while encoding/decoding]()
-
-## Partial Transmite
-
-The partial transmite is done by implementing a special component which tells if the whole message is beign encoded no matter if extra check bits still in pending state.
-
-## Auto transmite additional check bits
-
-In this design, the extra check bits will not try to transmite before anything wrong has been detected by the receiver.
-
-## Parallel codec
-
-This is done by implementating mulitple same encoder running at same time.
+Ren X, Ma J, Tsviatkou VY, Kanapelka VK. Improved Hard-Decision Iterative Decoding Method for 2D SEC-DED Codes. Engineering Letters. 2023 Mar 1;31(1).
